@@ -1,0 +1,21 @@
+{
+  "name": "gideon-openclaw",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenClaw tabanlı Türkçe kişisel yardımcı: GIDEON",
+  "type": "module",
+  "engines": { "node": ">=24.16.0 <25 || >=26.1.0" },
+  "scripts": {
+    "setup": "node scripts/gideon.mjs setup",
+    "start": "node scripts/gideon.mjs start",
+    "start:cloud": "bash scripts/cloud-start.sh",
+    "doctor": "node scripts/gideon.mjs doctor",
+    "dashboard": "node scripts/gideon.mjs dashboard",
+    "openclaw": "node scripts/gideon.mjs openclaw",
+    "backup": "node scripts/gideon.mjs backup",
+    "restore": "node scripts/gideon.mjs restore",
+    "test": "node --test tests/*.test.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs"
+  },
+  "dependencies": { "openclaw": "2026.10.3" }
+}

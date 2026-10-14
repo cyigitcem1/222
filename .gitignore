@@ -1,0 +1,11 @@
+node_modules/
+.gideon/
+.gideon-backups/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+dist/
+desktop/node_modules/
+.desktop-build/

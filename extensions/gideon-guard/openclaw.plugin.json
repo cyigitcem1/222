@@ -1,0 +1,17 @@
+{
+  "id": "gideon-guard",
+  "name": "GIDEON İşlem Onayı",
+  "description": "Yerel dosya ve hatırlatıcı işlemlerini OpenClaw onay akışıyla korur.",
+  "categories": ["other"],
+  "activation": { "onStartup": true },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["workspace"],
+    "properties": {
+      "workspace": { "type": "string", "minLength": 1 },
+      "agentId": { "type": "string", "minLength": 1, "default": "main" },
+      "stateDir": { "type": "string", "minLength": 1 }
+    }
+  }
+}

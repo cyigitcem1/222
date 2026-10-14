@@ -1,0 +1,61 @@
+appId: tr.gideon.desktop
+productName: GIDEON
+icon: assets/icon.png
+asar: true
+npmRebuild: false
+directories:
+  output: ../dist/desktop
+files:
+  - main.cjs
+  - preload.cjs
+  - controller.cjs
+  - ui/**
+  - assets/**
+  - package.json
+extraResources:
+  - from: ../.desktop-build/node
+    to: node
+    filter:
+      - node.exe
+      - LICENSE
+      - SHA256SUMS.txt
+  - from: ../.desktop-build/runtime
+    to: runtime
+    filter:
+      - "**/*"
+      - "!node_modules/.bin/**"
+      - "!**/.cache/**"
+      - "!**/*.log"
+  # electron-builder intentionally excludes a root node_modules folder from
+  # generic resource trees; give the bundled runtime dependencies their own root.
+  - from: ../.desktop-build/runtime/node_modules
+    to: runtime/node_modules
+    filter:
+      - "**/*"
+      - "!.bin/**"
+      - "!**/.cache/**"
+      - "!**/*.log"
+  - from: ../.desktop-build/runtime-manifest.json
+    to: runtime-manifest.json
+win:
+  icon: assets/icon.ico
+  target:
+    - target: portable
+      arch: [x64]
+  signExecutable: false
+  requestedExecutionLevel: asInvoker
+portable:
+  artifactName: GIDEON-${version}-Windows.exe
+  requestExecutionLevel: user
+nsis:
+  artifactName: GIDEON-${version}-Kurulum.exe
+  oneClick: true
+  perMachine: false
+  allowElevation: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: GIDEON
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+  unicode: true
+  installerLanguages: [tr_TR]

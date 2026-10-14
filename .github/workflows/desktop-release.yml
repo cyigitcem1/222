@@ -1,0 +1,66 @@
+name: GIDEON Windows release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gideon-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.19.0'
+          cache: npm
+      - run: npm ci --no-fund --no-audit
+      - run: npm test
+      - run: npm run test:integration
+
+  windows:
+    needs: checks
+    runs-on: windows-2025
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.19.0'
+          cache: npm
+      - name: Check release version
+        shell: pwsh
+        run: |
+          $version = (Get-Content desktop/package.json -Raw | ConvertFrom-Json).version
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw 'The tag must match desktop/package.json.'
+          }
+      - run: npm ci --no-fund --no-audit
+      - name: Build and verify bundled files
+        run: node scripts/build-desktop.mjs
+      - name: Verify native Windows engine
+        run: node scripts/verify-desktop-windows.mjs
+      - name: Publish verified portable release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Get-Content desktop/package.json -Raw | ConvertFrom-Json).version
+          $assets = @("dist/desktop/GIDEON-$version-Windows.exe", 'dist/desktop/SHA256SUMS.txt', 'dist/desktop/PACKAGED-SOURCES.json')
+          gh release view "$env:GITHUB_REF_NAME" --repo "$env:GITHUB_REPOSITORY" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            throw 'Release already exists; refusing to overwrite published binaries.'
+          }
+          gh release create "$env:GITHUB_REF_NAME" @assets --repo "$env:GITHUB_REPOSITORY" --verify-tag --title "GIDEON $version — Windows" --notes-file "docs/RELEASE-$version.md"
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub release publication failed.' }

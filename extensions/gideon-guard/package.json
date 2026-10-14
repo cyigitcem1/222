@@ -1,0 +1,12 @@
+{
+  "name": "@gideon/openclaw-guard",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "peerDependencies": { "openclaw": "2026.10.3" },
+  "openclaw": {
+    "extensions": ["./index.js"],
+    "compat": { "pluginApi": "2026.10.3", "minGatewayVersion": "2026.10.3" },
+    "build": { "openclawVersion": "2026.10.3", "pluginSdkVersion": "2026.10.3" }
+  }
+}

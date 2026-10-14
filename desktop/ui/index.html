@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta name="color-scheme" content="dark" />
+    <title>GIDEON</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="GIDEON durumu">
+        <a class="brand" href="#main" aria-label="GIDEON, ana içeriğe geç">
+          <span class="brand-symbol" aria-hidden="true"><span></span></span>
+          <span class="brand-name">GIDEON<span>KİŞİSEL YARDIMCINIZ</span></span>
+        </a>
+        <div class="sidebar-copy">
+          <span class="eyebrow">SİZE AİT BİR ALAN</span>
+          <p>Düşünceleriniz,<br />planlarınız,<br /><span>yeni başlangıçlar.</span></p>
+        </div>
+        <div class="status-card">
+          <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+          <div><span class="status-label" id="status-label">Durum kontrol ediliyor</span><span class="status-detail" id="status-detail">GIDEON masaüstü</span></div>
+        </div>
+        <p class="sidebar-footer">Bilgisayarınızda çalışır.<br />Gemini bağlantısı internet kullanır.</p>
+      </aside>
+
+      <main id="main" class="main" tabindex="-1">
+        <header class="topbar"><span class="topbar-label">GIDEON / MASAÜSTÜ</span><span class="topbar-tag">Sizinle başlar.</span></header>
+
+        <section class="screen loading-screen is-visible" data-screen="loading" aria-labelledby="loading-title">
+          <div class="orb small-orb" aria-hidden="true"><span></span></div>
+          <h1 id="loading-title">Birazdan buradayız.</h1>
+          <p>GIDEON’un durumu kontrol ediliyor.</p>
+        </section>
+
+        <section class="screen" data-screen="welcome" aria-labelledby="welcome-title">
+          <span class="eyebrow accent-text">HOŞ GELDİNİZ</span>
+          <h1 id="welcome-title">Bir tıkla,<br /><span>GIDEON yanınızda.</span></h1>
+          <p class="intro">Bağlantınızı bir kez kurun. Sonrasında GIDEON’u açıp sohbet etmeye başlayın.</p>
+
+          <div class="connection-card" id="setup-card">
+            <div class="card-heading"><span class="gemini-symbol" aria-hidden="true">✦</span><div><h2>Gemini bağlantısı</h2><p>GIDEON’un yanıt verebilmesi için.</p></div><span class="step-badge">İLK AÇILIŞ</span></div>
+            <form id="setup-form" novalidate>
+              <label for="setup-key">Gemini API anahtarınız</label>
+              <div class="key-field"><input id="setup-key" name="gemini-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="Anahtarınızı buraya yapıştırın" aria-describedby="key-help setup-error" /><button class="visibility-button" id="show-setup-key" type="button" aria-label="Anahtarı göster" aria-pressed="false">Göster</button></div>
+              <p class="field-help" id="key-help">Bir kez girmeniz yeterli. Anahtarınız bu bilgisayarda güvenli olarak saklanır.</p>
+              <p class="field-error" id="setup-error" role="alert" hidden></p>
+              <div class="setup-actions"><button class="button primary" id="save-start-button" type="submit">Kaydet ve aç<span class="arrow-icon" aria-hidden="true"></span></button><button class="text-button" id="get-key-button" type="button">Anahtar al<span class="arrow-icon" aria-hidden="true"></span></button></div>
+            </form>
+            <p class="billing-note">Anahtarınızı Google AI Studio’dan alabilirsiniz. Gemini uygulaması aboneliği API kullanımını kapsamaz; API ücretleri ayrıca uygulanabilir.</p>
+          </div>
+
+          <div class="saved-connection" id="saved-connection" hidden>
+            <span class="connection-check" aria-hidden="true">✓</span><div><h2>Bağlantınız kayıtlı</h2><p>Anahtarınızı yeniden girmenize gerek yok.</p></div>
+          </div>
+          <button class="button primary welcome-start" id="welcome-start-button" type="button" hidden>GIDEON’u aç<span class="arrow-icon" aria-hidden="true"></span></button>
+          <p class="privacy-line"><span aria-hidden="true">◇</span> Sohbet için gönderdiğiniz içerikler Gemini’ye iletilir.</p>
+        </section>
+
+        <section class="screen centered-screen" data-screen="starting" aria-labelledby="starting-title">
+          <div class="orb" aria-hidden="true"><span></span><i></i></div>
+          <span class="eyebrow accent-text">BİRAZ SABIR</span>
+          <h1 id="starting-title">GIDEON hazırlanıyor.</h1>
+          <p class="screen-message" id="starting-message">Sohbet bağlantısı başlatılıyor.</p>
+          <div class="progress-track" role="progressbar" aria-label="GIDEON başlatılıyor"><span></span></div>
+          <p class="quiet-note">Hazır olduğunda sohbeti buradan açabilirsiniz.</p>
+        </section>
+
+        <section class="screen centered-screen" data-screen="ready" aria-labelledby="ready-title">
+          <div class="ready-emblem" aria-hidden="true"><span class="brand-symbol"><span></span></span><span class="ready-check">✓</span></div>
+          <span class="eyebrow accent-text">BAĞLANTI HAZIR</span>
+          <h1 id="ready-title">Sohbetinize başlayın.</h1>
+          <p class="intro">Bir fikir, bir plan ya da aklınıza takılan bir soru.<br />GIDEON’u sohbet penceresinde bulabilirsiniz.</p>
+          <button class="button primary large-button" id="open-panel-button" type="button">Sohbeti aç<span class="arrow-icon" aria-hidden="true"></span></button>
+          <div class="ready-notes"><div><span class="note-icon arrow-icon" aria-hidden="true"></span><p>Sohbet penceresi tarayıcınızda açılır.</p></div><div><span class="note-icon microphone-icon" aria-hidden="true"></span><p id="voice-note">Sesli kullanım için sohbet penceresinde mikrofon izni gerekir. Ses bağlantısı henüz doğrulanmadı.</p></div></div>
+        </section>
+
+        <section class="screen centered-screen" data-screen="error" aria-labelledby="error-title">
+          <div class="error-emblem" aria-hidden="true">!</div>
+          <span class="eyebrow">BAĞLANTI TAMAMLANAMADI</span>
+          <h1 id="error-title">Bir adım daha var.</h1>
+          <p class="screen-message error-message" id="error-message">GIDEON şu anda açılamıyor.</p>
+          <button class="button primary" id="retry-button" type="button">Yeniden dene<span class="retry-icon" aria-hidden="true"></span></button>
+          <button class="text-button error-settings-button" id="error-settings-button" type="button">Bağlantı ayarlarını aç</button>
+        </section>
+
+        <div class="inline-notice" id="notice" role="status" aria-live="polite" hidden></div>
+
+        <details class="settings" id="settings">
+          <summary><span>Ayarlar</span><span class="settings-chevron" aria-hidden="true">⌄</span></summary>
+          <div class="settings-content">
+            <div class="settings-heading"><h2>Gemini bağlantısı</h2><p id="settings-key-status">Anahtar durumu kontrol ediliyor.</p></div>
+            <form id="settings-form" novalidate>
+              <label for="settings-key">Yeni API anahtarı</label>
+              <div class="key-field"><input id="settings-key" name="replacement-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="Değiştirmek için yeni anahtarı girin" aria-describedby="settings-key-help settings-error" /><button class="visibility-button" id="show-settings-key" type="button" aria-label="Yeni anahtarı göster" aria-pressed="false">Göster</button></div>
+              <p class="field-help" id="settings-key-help">Kayıtlı anahtar güvenliğiniz için burada gösterilmez.</p>
+              <p class="field-error" id="settings-error" role="alert" hidden></p>
+              <button class="button secondary" id="update-key-button" type="submit">Anahtarı değiştir</button>
+            </form>
+            <div class="settings-tools"><button class="text-button muted-button" id="settings-get-key-button" type="button">Anahtar al<span class="arrow-icon" aria-hidden="true"></span></button><button class="text-button danger-button" id="forget-key-button" type="button">Kayıtlı anahtarı sil</button><button class="text-button muted-button" id="stop-button" type="button">GIDEON’u durdur</button></div>
+            <div class="forget-confirmation" id="forget-confirmation" hidden><p>Kaydedilen anahtar bu bilgisayardan silinecek. Yeniden kullanmak için anahtarı tekrar girmeniz gerekir.</p><div><button class="button danger" id="confirm-forget-button" type="button">Anahtarı sil</button><button class="button secondary" id="cancel-forget-button" type="button">Vazgeç</button></div></div>
+          </div>
+        </details>
+        <footer class="main-footer"><span>GIDEON</span><span>OpenClaw ile çalışır.</span></footer>
+        <span class="sr-only" id="status-announcement" aria-live="polite" aria-atomic="true"></span>
+      </main>
+    </div>
+  </body>
+</html>
