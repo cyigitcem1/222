@@ -4,6 +4,6 @@ Windows x64 için taşınabilir tek dosya: **GIDEON-0.2.0-Windows.exe**. Çift t
 
 Anahtar Windows hesabıyla şifrelenir. Kişisel veriler `%APPDATA%\GIDEON` altında korunur. Bağlantı ayarlarından anahtar değiştirilebilir veya kaldırılabilir. Uygulama yalnızca kendi başlattığı hizmeti kapatır; mevcut OpenClaw kurulumunuzu taşımaz veya üzerine yazmaz.
 
-Bu sürüm yayıncı sertifikasıyla imzalı değildir. Linux'ta yerel testler, gerçek OpenClaw entegrasyonu ve Chromium arayüz akışları denetlendi; gerçek Windows DPAPI, Gemini API yanıtı ve mikrofon/canlı ses testi henüz yapılmadı. Google API erişimi ve kota gerekir; Gemini/ChatGPT tüketici aboneliği API ücretini otomatik karşılamaz.
+Bu sürüm yayıncı sertifikasıyla imzalı değildir. Linux'ta yerel testler, gerçek OpenClaw entegrasyonu ve Chromium arayüz akışları denetlendi. Windows 2025 CI içinde Microsoft imzaları, yerel çalışma zamanı ve gerçek Gateway açılışı/kimlik doğrulaması/düzgün kapanışı geçti; gerçek Windows DPAPI, Gemini API yanıtı ve mikrofon/canlı ses testi henüz yapılmadı. Google API erişimi ve kota gerekir; Gemini/ChatGPT tüketici aboneliği API ücretini otomatik karşılamaz.
 
 [Kullanım notları](https://github.com/cyigitcem1/222/blob/main/docs/MASAUSTU.md) · [Doğrulama kapsamı](https://github.com/cyigitcem1/222/blob/main/docs/DOGRULAMA.md)

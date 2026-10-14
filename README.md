@@ -8,7 +8,7 @@ Dosyaya çift tıklayın; ilk açılışta Gemini bağlantı anahtarınızı bir
 
 Anahtar Windows hesabınızla şifrelenir. Kişisel veriler uygulama dosyasının yanında tutulmaz; `%APPDATA%\GIDEON` altında kalır. **GIDEON → Bağlantı ayarları** menüsünden anahtarınızı değiştirebilir veya kaldırabilirsiniz. Programı kapatınca yalnızca kendisinin açtığı hizmet kapanır. İlk açılışta başka bir program aynı adresi kullanıyorsa otomatik boş adres seçilir; var olan profilin adresi sessizce değiştirilmez.
 
-Masaüstü sürümünü Linux bulutunda paketledik; gerçek Windows, Gemini ve mikrofon testi henüz yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
+Windows çalışma zamanı, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı ve düzgün kapanış GitHub Actions Windows 2025 ortamında doğrulandı. Gerçek Windows arayüzü/DPAPI, Gemini ve mikrofon testi henüz yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
 
 GIDEON, OpenClaw üzerinde çalışan Türkçe kişisel yardımcıdır. Resmî OpenClaw panelinde yazılı sohbet ve Google Live Voice, kalıcı konuşma kayıtları, kaynaklı hafıza araması ve onaylı yerel hatırlatmalar için hazırlanmıştır. Kimliği ve davranış kuralları tek `main` ajanında tutulur; kişisel bilgiler ilk kurulumda boş bırakılır.
 
