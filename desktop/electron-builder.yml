@@ -9,6 +9,7 @@ files:
   - main.cjs
   - preload.cjs
   - controller.cjs
+  - app-paths.cjs
   - ui/**
   - assets/**
   - package.json
@@ -50,6 +51,11 @@ win:
 portable:
   artifactName: GIDEON-${version}-Windows.exe
   requestExecutionLevel: user
+  splashImage: assets/startup.bmp
+  # In the pinned builder, boolean true leaves UNPACK_DIR_NAME undefined and
+  # uses NSIS's unique per-launch $PLUGINSDIR. A second click must not remove
+  # resources belonging to an already running GIDEON process.
+  unpackDirName: true
 nsis:
   artifactName: GIDEON-${version}-Kurulum.exe
   oneClick: true

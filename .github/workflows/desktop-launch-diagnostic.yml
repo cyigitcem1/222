@@ -1,0 +1,44 @@
+name: Diagnose published Windows launch
+
+on:
+  push:
+    branches: ['main']
+    paths:
+      - '.github/workflows/desktop-launch-diagnostic.yml'
+      - 'scripts/verify-desktop-launch-windows.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  published-launch:
+    runs-on: windows-2025
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.19.0'
+      - name: Download exact published EXE and verify checksum
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:RUNNER_TEMP 'GIDEON-0.2.0-Windows.exe'
+          Invoke-WebRequest 'https://github.com/cyigitcem1/222/releases/download/v0.2.0/GIDEON-0.2.0-Windows.exe' -OutFile $exe
+          $expected = 'd14addea3da8fd002c0634b95bbfb7f0ece80e47139227500f6f18baf08ca968'
+          if ((Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) {
+            throw 'Published EXE checksum mismatch.'
+          }
+      - name: Launch original portable EXE on a fresh Windows profile
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          $exe = Join-Path $env:RUNNER_TEMP 'GIDEON-0.2.0-Windows.exe'
+          node scripts/verify-desktop-launch-windows.mjs $exe --legacy-profile 2>&1 | Tee-Object -FilePath original-launch.log
+          $launchExit = $LASTEXITCODE
+          if ($launchExit -ne 0) {
+            $tail = (Get-Content original-launch.log -Tail 35) -join "`n"
+            $message = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Original published desktop::$message"
+            exit $launchExit
+          }

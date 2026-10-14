@@ -252,7 +252,7 @@ async function verifyPackageSources() {
     }
     return result;
   }
-  const gui = ['main.cjs', 'controller.cjs', 'preload.cjs'];
+  const gui = ['main.cjs', 'controller.cjs', 'preload.cjs', 'app-paths.cjs'];
   for (const directory of ['ui', 'assets']) {
     gui.push(...(await regularFiles(join(desktop, directory))).map(name => `${directory}/${name}`));
   }
@@ -322,7 +322,7 @@ if (!packageOnly && !verifyOnly) {
 }
 if (!prepareOnly) {
   const desktop = join(root, 'desktop');
-  for (const name of ['main.cjs', 'preload.cjs', 'controller.cjs', 'ui/index.html']) if (!existsSync(join(desktop, name))) throw new Error(`Desktop source missing: ${name}`);
+  for (const name of ['main.cjs', 'preload.cjs', 'controller.cjs', 'app-paths.cjs', 'ui/index.html']) if (!existsSync(join(desktop, name))) throw new Error(`Desktop source missing: ${name}`);
   const electronZip = join(downloads, electronArchive);
   const manifest = JSON.parse(await readFile(join(build, 'runtime-manifest.json'), 'utf8'));
   if (!existsSync(electronZip) || await hash(electronZip) !== manifest.electron?.archiveSha256) throw new Error('Verified Windows Electron archive not prepared');

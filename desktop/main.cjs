@@ -4,10 +4,17 @@ const { readFile } = require('node:fs/promises');
 const { fileURLToPath, pathToFileURL } = require('node:url');
 const { spawnSync } = require('node:child_process');
 const { createController } = require('./controller.cjs');
+const { configureUserData } = require('./app-paths.cjs');
 
-app.setName('GIDEON');
-app.setPath('userData', path.join(app.getPath('appData'), 'GIDEON'));
-const instance = app.requestSingleInstanceLock();
+let instance = false;
+try {
+  app.setName('GIDEON');
+  configureUserData(app);
+  instance = app.requestSingleInstanceLock();
+} catch {
+  dialog.showErrorBox('GIDEON açılamadı', 'GIDEON kişisel veri klasörünü hazırlayamadı. Dosyayı kendi Windows hesabınızla tekrar açın. Sorun sürerse bu mesajı paylaşın; bağlantı anahtarınızı paylaşmayın.');
+  app.exit(1);
+}
 if (!instance) app.quit();
 let setupWindow, panelWindow, controller, quitting = false, microphoneConsent = false;
 const runtimeRoot = app.isPackaged ? path.join(process.resourcesPath, 'runtime') : path.resolve(__dirname, '..');
@@ -25,17 +32,22 @@ function setup() {
   setupWindow = new BrowserWindow({
     title: 'GIDEON', width: 1040, height: 790, minWidth: 720, minHeight: 620,
     backgroundColor: '#081421', icon: path.join(__dirname, 'assets', 'icon.png'),
-    show: false, autoHideMenuBar: false,
+    show: true, autoHideMenuBar: false,
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true },
   });
-  setupWindow.once('ready-to-show', () => setupWindow.show());
+  setupWindow.once('ready-to-show', () => { setupWindow?.show(); setupWindow?.focus(); });
   setupWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  setupWindow.webContents.once('render-process-gone', () => {
+    if (quitting || !setupWindow || setupWindow.isDestroyed()) return;
+    dialog.showErrorBox('GIDEON penceresi açılamadı', 'GIDEON arayüzü yüklenirken kapandı. Uygulamayı kapatıp yeniden açın. Sorun sürerse bu mesajı paylaşın; bağlantı anahtarınızı paylaşmayın.');
+    app.quit();
+  });
   setupWindow.webContents.on('will-navigate', event => event.preventDefault());
   setupWindow.on('close', event => {
     if (!quitting && panelWindow && !panelWindow.isDestroyed()) { event.preventDefault(); setupWindow.hide(); panelWindow.show(); }
   });
   setupWindow.on('closed', () => { setupWindow = undefined; });
-  void setupWindow.loadFile(indexPath);
+  return setupWindow.loadFile(indexPath);
 }
 
 function authorized(event) {
@@ -106,7 +118,7 @@ if (instance) {
       ] },
       { label: 'Düzenle', submenu: [{ role: 'undo', label: 'Geri al' }, { role: 'cut', label: 'Kes' }, { role: 'copy', label: 'Kopyala' }, { role: 'paste', label: 'Yapıştır' }, { role: 'selectAll', label: 'Tümünü seç' }] },
     ]));
-    setup();
+    const loading = setup();
     controller = createController({
       stateDir, nodePath, runtimeRoot,
       secureStore: { available: secureStoreAvailable, encrypt: value => safeStorage.encryptString(value), decrypt: buffer => safeStorage.decryptString(buffer) },
@@ -125,7 +137,7 @@ if (instance) {
       authorized(event);
       try { return await action(...args); } catch { throw new Error('Bu işlem tamamlanamadı. GIDEON penceresindeki durumu kontrol edip yeniden deneyin.'); }
     });
-    const status = await controller.initialize();
+    const [, status] = await Promise.all([loading, controller.initialize()]);
     if (status.hasKey) {
       const ready = await controller.start();
       if (ready.gatewayReady) await openPanel();

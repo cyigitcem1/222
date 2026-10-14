@@ -1,8 +1,16 @@
-# Teslim doğrulaması — 14 Ekim 2026
+# Teslim doğrulaması — 0.2.1, 14 Ekim 2026
 
 Çalıştırılan ortam: Linux x64 bulut, Node.js 24.19.0, npm 11.9.0, resmî OpenClaw 2026.10.3. Gerçek kullanıcı cihazına veya mevcut Windows OpenClaw kurulumuna erişilmedi. Test içerikleri sentetiktir.
 
-## Geçen kontroller
+## 0.2.1 açılış düzeltmesi
+
+Windows kullanıcısı uygulamaya çift tıklandığında pencere görünmediğini bildirdi. İlk inceleme kullanıcı veri klasörü ve pencere yükleme sırasına odaklandı. 0.2.1, `%APPDATA%\GIDEON` klasörünü önceden hazırlar, başlangıç penceresini görünür açar ve `loadFile` sonucunu bekler; mevcut veriyi veya kayıtlı anahtarı silmez. Eski uygulamanın gerçek Windows sonucu gelmeden bu değişiklikler kullanıcının hatasının kesin kök nedeni olarak sunulmaz.
+
+İlk açılış davranışı için dört regresyon testi eklendi; birim test kataloğu toplam **59 test** oldu. Yeni toplam çalışmanın sonucu ayrıca doğrulanacaktır.
+
+**Beklemede:** Eski ve yeni taşınabilir EXE'nin gerçek Windows masaüstünde karşılaştırmalı açılışı ve DPAPI şifreleme/okuma kontrolü. Önceki Node/Gateway denetimi, Electron uygulamasının açılışını test etmediğinden bu düzeltmenin Windows kabul kanıtı yerine geçmez. Yeni sonuç gelene kadar başarılı olarak işaretlenmez.
+
+## Önceki sürümde geçen kontroller
 
 - `npm ci --cache /workspace/.npm-cache --no-fund --no-audit`: kilit dosyasıyla kurulum başarılı; paket/TLS doğrulaması kapatılmadı.
 - `npm run setup`: gerçek OpenClaw şemasıyla başarılı. Tekrar kurulum kişisel notları ve erişim token'ını koruyor; yabancı kurulum ve bağlantılı dosyalar reddediliyor.

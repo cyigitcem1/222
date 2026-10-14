@@ -84,6 +84,31 @@ jobs:
             Write-Output "::error title=Windows packaging::$message"
             exit $packageExit
           }
+      - name: Verify real Windows desktop and encrypted key storage
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          node scripts/verify-desktop-launch-windows.mjs dist/desktop/win-unpacked/GIDEON.exe 2>&1 | Tee-Object -FilePath windows-ui.log
+          $uiExit = $LASTEXITCODE
+          if ($uiExit -ne 0) {
+            $tail = (Get-Content windows-ui.log -Tail 35) -join "`n"
+            $message = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Windows desktop::$message"
+            exit $uiExit
+          }
+      - name: Verify actual portable EXE launch
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          $version = (Get-Content desktop/package.json -Raw | ConvertFrom-Json).version
+          node scripts/verify-desktop-launch-windows.mjs "dist/desktop/GIDEON-$version-Windows.exe" 2>&1 | Tee-Object -FilePath windows-portable.log
+          $portableExit = $LASTEXITCODE
+          if ($portableExit -ne 0) {
+            $tail = (Get-Content windows-portable.log -Tail 35) -join "`n"
+            $message = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Windows portable launch::$message"
+            exit $portableExit
+          }
       - name: Publish verified portable release
         if: github.ref_type == 'tag'
         shell: pwsh

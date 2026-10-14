@@ -2,13 +2,15 @@
 
 ## Windows masaüstü — çift tıklayarak açın
 
-Windows sürümünün yayın sayfası: [GitHub Releases](https://github.com/cyigitcem1/222/releases/latest). Masaüstü dosyasının adı **GIDEON-0.2.0-Windows.exe**.
+Windows sürümünün yayın sayfası: [GitHub Releases](https://github.com/cyigitcem1/222/releases/latest). Masaüstü dosyasının adı **GIDEON-0.2.1-Windows.exe**.
+
+**0.2.1 açılış düzeltmesi:** İlk kullanım için veri klasörü önceden hazırlanır, başlangıç penceresi görünür açılır ve arayüzün yüklenmesi beklenir. Önceki GIDEON verileri ve kayıtlı anahtar silinmez. Kullanıcının bildirdiği açılmama sorunu için eski ve yeni Windows dosyalarının karşılaştırmalı testi bekleniyor.
 
 Dosyaya çift tıklayın; ilk açılışta Gemini bağlantı anahtarınızı bir kez girip **Kaydet ve aç** seçeneğine basın. Sonraki açılışlarda sohbet otomatik açılır. Node ve OpenClaw programın içinde bulunur; terminal veya npm paket kurulumu gerekmez.
 
 Anahtar Windows hesabınızla şifrelenir. Kişisel veriler uygulama dosyasının yanında tutulmaz; `%APPDATA%\GIDEON` altında kalır. **GIDEON → Bağlantı ayarları** menüsünden anahtarınızı değiştirebilir veya kaldırabilirsiniz. Programı kapatınca yalnızca kendisinin açtığı hizmet kapanır. İlk açılışta başka bir program aynı adresi kullanıyorsa otomatik boş adres seçilir; var olan profilin adresi sessizce değiştirilmez.
 
-Windows çalışma zamanı, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı ve düzgün kapanış GitHub Actions Windows 2025 ortamında doğrulandı. Gerçek Windows arayüzü/DPAPI, Gemini ve mikrofon testi henüz yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
+Önceki sürümün Windows çalışma zamanı, gerçek Gateway açılışı, kimlik doğrulamalı bağlantısı ve düzgün kapanışı GitHub Actions Windows 2025 ortamında doğrulandı. **0.2.1 taşınabilir uygulamasının gerçek Windows pencere açılışı ve DPAPI testi şu an doğrulama bekliyor.** Gemini ve mikrofon testi yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
 
 GIDEON, OpenClaw üzerinde çalışan Türkçe kişisel yardımcıdır. Resmî OpenClaw panelinde yazılı sohbet ve Google Live Voice, kalıcı konuşma kayıtları, kaynaklı hafıza araması ve onaylı yerel hatırlatmalar için hazırlanmıştır. Kimliği ve davranış kuralları tek `main` ajanında tutulur; kişisel bilgiler ilk kurulumda boş bırakılır.
 
