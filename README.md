@@ -2,7 +2,7 @@
 
 ## Windows masaüstü — bir kez kurun, simgeden açın
 
-Windows sürümünün yayın sayfası: [GitHub Releases](https://github.com/cyigitcem1/222/releases/latest). Önerilen dosya **GIDEON-0.2.2-Kurulum.exe**.
+Windows sürümünün yayın sayfası: [GitHub Releases](https://github.com/cyigitcem1/222/releases/latest). Aday kurulum dosyası **GIDEON-0.2.3-Kurulum.exe**; gerçek Windows denetimleri geçtikten sonra yayımlanır.
 
 Kurulum dosyasına çift tıklayın. Program Windows hesabınıza otomatik kurulur ve açılır; yönetici kurulumu, Node veya terminal gerekmez. İlk kurulum birkaç dakika sürebilir. GIDEON penceresinde Gemini API anahtarınızı bir kez girip **Kaydet ve aç** seçeneğine basın.
 
@@ -10,7 +10,7 @@ Sonraki açılışlarda masaüstündeki **GIDEON** simgesini kullanın. Uygulama
 
 Anahtar Windows hesabınızla şifrelenir. Kişisel veriler uygulama dosyasının yanında tutulmaz; `%APPDATA%\GIDEON` altında kalır. **GIDEON → Bağlantı ayarları** menüsünden anahtarınızı değiştirebilir veya kaldırabilirsiniz. Programı kapatınca yalnızca kendisinin açtığı hizmet kapanır. İlk açılışta başka bir program aynı adresi kullanıyorsa otomatik boş adres seçilir; var olan profilin adresi sessizce değiştirilmez.
 
-0.2.1'in arşivden çıkarılmış uygulama EXE'siyle Windows arayüzü, ikinci açılış ve DPAPI denetimleri geçti; taşınabilir paket yayın kontrolünü geçemediği için yayımlanmadı. **0.2.2'nin gerçek kurulumu ve kurulu uygulama denetimleri henüz tamamlanmadı.** Gemini ve mikrofon testi yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
+0.2.1'in arşivden çıkarılmış uygulama EXE'siyle Windows arayüzü, ikinci açılış ve DPAPI denetimleri geçti. Taşınabilir 0.2.1 ve kurulum 0.2.2 paketleri yayın denetimlerini geçemediği için yayımlanmadı. **0.2.3'ün gerçek kurulumu, masaüstü kısayolu ve kurulu uygulama denetimleri beklemede.** Gemini ve mikrofon testi yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
 
 GIDEON, OpenClaw üzerinde çalışan Türkçe kişisel yardımcıdır. Resmî OpenClaw panelinde yazılı sohbet ve Google Live Voice, kalıcı konuşma kayıtları, kaynaklı hafıza araması ve onaylı yerel hatırlatmalar için hazırlanmıştır. Kimliği ve davranış kuralları tek `main` ajanında tutulur; kişisel bilgiler ilk kurulumda boş bırakılır.
 

@@ -1,8 +1,8 @@
-# Teslim doğrulaması — 0.2.2, 14 Ekim 2026
+# Teslim doğrulaması — 0.2.3 adayı, 14 Ekim 2026
 
 Çalıştırılan ortam: Linux x64 bulut, Node.js 24.19.0, npm 11.9.0, resmî OpenClaw 2026.10.3. Gerçek kullanıcı cihazına veya mevcut Windows OpenClaw kurulumuna erişilmedi. Test içerikleri sentetiktir.
 
-## Windows açılış tanısı ve 0.2.2 dağıtımı
+## Windows açılış tanısı ve 0.2.3 adayı
 
 Windows kullanıcısı uygulamaya çift tıklandığında pencere görünmediğini bildirdi. İlk inceleme kullanıcı veri klasörü ve pencere yükleme sırasına odaklandı. Gerçek eski EXE denemesinde ilk pencere açıldığı için, kullanıcı klasörü hazırlığının eksikliği doğrulanmış kök neden olarak kabul edilmedi.
 
@@ -16,9 +16,13 @@ Windows kullanıcısı uygulamaya çift tıklandığında pencere görünmediği
 
 Sonraki iki gerçek Windows çalışmasında **çıkarılmış uygulama EXE'sinin görünür arayüzü, ikinci açılışı, DPAPI şifreleme/okuma ve doğal kapanışı yaklaşık 38 saniyede geçti**. Taşınabilir 0.2.1 dosyasının ilk arayüzü yaklaşık **289 saniyede** göründü; ikinci başlatıcının doğal kapanışı için ayrılan **300 saniye** dolunca test onu SIGTERM ile durdurdu. Doğal kapanış kontrolü başarısız olduğu için **v0.2.1 yayın işi durdu ve paket yayımlanmadı**. Bu son hata ikinci uygulama süreci ile taşınabilir başlatıcının çıkarma/temizlik davranışını tek başına ayırmaz; kesin alt neden iddiası yapılmaz.
 
-0.2.2 için önerilen dağıtım **GIDEON-0.2.2-Kurulum.exe** oldu. Kullanıcı hesabına bir kez kurulan NSIS paketinde sonraki masaüstü kısayolu açılışları aynı kurulu dosyaları kullanır; büyük motor arşivi her açılışta tekrar çıkarılmaz. `%APPDATA%\GIDEON` verisi korunur, kurulum yönetici yetkisi istemez.
+0.2.2 ile kullanıcı hesabına bir kez kurulan NSIS dağıtımına geçildi; sonraki masaüstü kısayolu açılışları aynı kurulu dosyaları kullanır ve büyük motor arşivi her açılışta tekrar çıkarılmaz. `%APPDATA%\GIDEON` verisi korunacak biçimde yapılandırılır; kurulum yönetici yetkisi istemez.
 
-**Beklemede:** Gerçek 0.2.2 kurulumunun çalıştırılması, masaüstü kısayolunun kurulu EXE'ye işaret etmesi, bu EXE'nin görünür arayüz/ikinci açılış/DPAPI/doğal kapanış denetimleri ve aynı değişmeyen paket içeriğinin Windows motor kontrolü. Yayın iş akışı bunların tamamı geçmeden sürümü yayımlamaz. Önceki çıkarılmış EXE veya Node/Gateway başarıları yeni kurulumun kabulü yerine geçmez.
+[0.2.2 etiketinin gerçek Windows yayın denetimi](https://github.com/cyigitcem1/222/actions/runs/38584834983/job/115925045538): Masaüstü kısayolunun kurulu EXE'yi hedeflediğini doğrulayan kontrol ve standart kaldırma temizliği başarısız oldu. **v0.2.2 yayımlanmadı.** Bu sonuç, kısayolun gerçek durumu veya temizlik başarısızlığının kesin alt nedenini tek başına belirlemez; ayrıntılı tanı tamamlanmadan kök neden iddiası yapılmaz.
+
+[Tamamlanan 0.2.2 tanısı](https://github.com/cyigitcem1/222/actions/runs/38592257649/job/115951019860): Masaüstü kısayolu vardı ve ek argümanı yoktu; hedefteki `C:\Users\runneradmin\...` ile testin beklediği `C:\Users\RUNNER~1\...` aynı uygulama yolunun uzun ve DOS kısa adlarıydı. İlk kısayol kontrolü bu yazım farkını yanlışlıkla başarısızlık saydı. Kaldırma sonrası uygulamanın GUID kayıtları ve dört kısayolu temizlenmiş, GIDEON süreç sayısı sıfır olmuştu; ancak `resources` klasörü kalmıştı ve içindeki derin dosyalar henüz belirlenmedi. 0.2.3 adayında mevcut dosyaların kanonik `realpath` karşılaştırması ve resmî kaldırıcı akışını koruyan, yalnızca uygulamanın kendi dizinine yönelik genişletilmiş yerel yol önekli NSIS kaldırma kancası eklendi. Uzun yol sınırı, kalan klasör için bir hipotezdir; kesin kök neden veya yeni kaldırma başarısı olarak sunulmaz.
+
+Yeni aday dağıtım **GIDEON-0.2.3-Kurulum.exe**. **Beklemede:** Gerçek kurulum, masaüstü kısayolunun kurulu EXE'ye işaret etmesi, bu EXE'nin görünür arayüz/ikinci açılış/DPAPI/doğal kapanış denetimleri, standart kaldırma ve kişisel verinin korunması ile aynı değişmeyen paket içeriğinin Windows motor kontrolü. Yayın iş akışı bunların tamamı geçmeden sürümü yayımlamaz. Önceki çıkarılmış EXE veya Node/Gateway başarıları yeni kurulumun kabulü yerine geçmez.
 
 ## Geçen yerel kontroller
 
@@ -42,7 +46,7 @@ Resmî `security audit --json`: **0 kritik**, **1 uyarı**, **1 bilgi**. Uyarı 
 
 Gemini API yanıtı, Türkçe beş dakikalık çift yönlü ses ve söz kesme, gerçek modelin kişilik/hafıza davranışı, kullanıcının onay ekranında kabul/ret akışı, zamanı gelen bildirimin gerçek kullanıcıya teslimi, Windows mikrofonu, telefon/HTTPS erişimi, Google Calendar/e-posta, otomatik maliyet raporu ve üç yıllık işletim. Bunlar yerel test başarısıyla tamamlanmış sayılmaz; ilgili kabul adımları KABUL-TESTLERI.md içindedir.
 
-0.2.2 kurulumunun tam denetimi yukarıdaki durumdadır; Electron mikrofon izni çalıştırılmadı. Önceki Windows 2025 CI kontrolünde Microsoft imzaları ve VC 14.51 sürümü, uygulama klasöründeki DLL yükleme yolu, Windows yerel dosya sistemi bağlaması, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı, doğal 0 çıkışı, kilit temizliği ve portun kapanması geçti. Miras alınan Node derleme önbelleği de bu kontrolde vardı. [Önceki Windows motor kontrolü](https://github.com/cyigitcem1/222/actions/runs/38543158138/job/115783160761) 14 Ekim 2026 tarihinde başarılı oldu. Bu, yeni kurulumun arayüz veya DPAPI testi değildir. GIDEON yayıncı sertifikasıyla imzalı değildir. GitHub sürüm sayfasının belgede bulunması tek başına dosyanın yayımlandığını kanıtlamaz; yayın sonucu ayrı doğrulanmalıdır.
+0.2.3 aday kurulumunun tam denetimi yukarıdaki durumdadır; Electron mikrofon izni çalıştırılmadı. Önceki Windows 2025 CI kontrolünde Microsoft imzaları ve VC 14.51 sürümü, uygulama klasöründeki DLL yükleme yolu, Windows yerel dosya sistemi bağlaması, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı, doğal 0 çıkışı, kilit temizliği ve portun kapanması geçti. Miras alınan Node derleme önbelleği de bu kontrolde vardı. [Önceki Windows motor kontrolü](https://github.com/cyigitcem1/222/actions/runs/38543158138/job/115783160761) 14 Ekim 2026 tarihinde başarılı oldu. Bu, yeni kurulumun arayüz veya DPAPI testi değildir. GIDEON yayıncı sertifikasıyla imzalı değildir. GitHub sürüm sayfasının belgede bulunması tek başına dosyanın yayımlandığını kanıtlamaz; yayın sonucu ayrı doğrulanmalıdır.
 
 ## Kaydedilen bulut ayarları
 

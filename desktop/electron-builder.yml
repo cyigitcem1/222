@@ -57,6 +57,7 @@ portable:
   # resources belonging to an already running GIDEON process.
   unpackDirName: true
 nsis:
+  include: installer.nsh
   artifactName: GIDEON-${version}-Kurulum.exe
   oneClick: true
   perMachine: false

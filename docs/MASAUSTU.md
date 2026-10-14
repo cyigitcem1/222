@@ -1,12 +1,12 @@
 # GIDEON masaüstü
 
-Windows x64 için önerilen dosya: **GIDEON-0.2.2-Kurulum.exe**. [Yayın sayfası](https://github.com/cyigitcem1/222/releases/latest). Dosyaya çift tıklayın; program Windows hesabınıza otomatik kurulur ve açılır. Node ve OpenClaw paketin içindedir; komut satırı, npm paket kurulumu ve yönetici kurulumu gerekmez. İlk kurulum bilgisayara göre birkaç dakika sürebilir.
+Windows x64 için aday dosya: **GIDEON-0.2.3-Kurulum.exe**. [Yayın sayfası](https://github.com/cyigitcem1/222/releases/latest). Gerçek Windows denetimleri geçmeden yayımlanmaz. Yayınlanan kurulum dosyasına çift tıklayın; program Windows hesabınıza otomatik kurulur ve açılır. Node ve OpenClaw paketin içindedir; komut satırı, npm paket kurulumu ve yönetici kurulumu gerekmez. İlk kurulum bilgisayara göre birkaç dakika sürebilir.
 
-0.2.2, dosyaları bir kez kurup sonraki kullanımlarda doğrudan kurulu uygulamayı açar. Taşınabilir 0.2.1 paketinin ikinci açılış/kapanış denetimi zaman sınırını aşınca yayın yapılmadı. Yeni kurulumun gerçek Windows denetimleri tamamlanmadan bu paket yayımlanmaz. Var olan notlar, konuşmalar ve şifreli anahtar üzerine yazılmaz; güncelleme için veri klasörünü silmeyin.
+Kurulum sürümü, dosyaları bir kez kurup sonraki kullanımlarda doğrudan kurulu uygulamayı açar. Taşınabilir 0.2.1 paketinin ikinci açılış/kapanış ve kurulum 0.2.2 paketinin kısayol/kaldırma denetimleri başarısız olunca yayın yapılmadı. Aday 0.2.3 kurulumu tüm gerçek Windows kontrollerinden geçmelidir. Var olan notlar, konuşmalar ve şifreli anahtar üzerine yazılmaz; güncelleme için veri klasörünü silmeyin.
 
 ## İlk açılış
 
-1. **GIDEON-0.2.2-Kurulum.exe** dosyasına çift tıklayıp kurulumun bitmesini bekleyin; GIDEON otomatik açılır.
+1. Yayınlanan **GIDEON-0.2.3-Kurulum.exe** dosyasına çift tıklayıp kurulumun bitmesini bekleyin; GIDEON otomatik açılır.
 2. Gemini bağlantı anahtarınızı kutuya girin. Yoksa **Anahtar al** düğmesi Google'ın sayfasını açar.
 3. **Kaydet ve aç** düğmesine basın.
 
@@ -32,7 +32,7 @@ Kalıcı notlar ve asıl konuşmalar resmî OpenClaw veri alanındadır. Önceki
 
 Linux'ta 59 birim ve 9 entegrasyon testi geçti. Arayüzün dört akışı Chromium'da taklit edilmiş bağlantı durumlarıyla; kontrolcünün anahtar/güvenlik/hata/başlatma işlemleri birim testlerinde; motorun açılışı ve düzgün kapanması gerçek OpenClaw ile Linux'ta test edildi. Sonuçların kapsamı [doğrulama raporunda](DOGRULAMA.md).
 
-Önceki Windows 2025 CI kontrolünde Microsoft imzaları, yerel DLL yükleme, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı ve düzgün kapanış geçti. 0.2.1'in çıkarılmış uygulama dosyalarıyla gerçek arayüz, ikinci açılış, DPAPI şifreleme/okuma ve doğal kapanış iki Windows çalışmasında geçti. Taşınabilir paket denetimi aynı sonuca ulaşamadı ve yayın yapılmadı. **0.2.2'nin gerçek kurulumu, masaüstü kısayolu, kurulu arayüzü ve DPAPI kontrolü beklemede.** Mikrofon izni, Gemini yanıtı ve kesintisiz Türkçe ses görüşmesi çalıştırılmadı. Windows ARM veya 32 bit paket sunulmaz. Telefon erişimi ve arka planda sürekli dinleme bu masaüstü dosyasının tamamlanmış özellikleri değildir.
+Önceki Windows 2025 CI kontrolünde Microsoft imzaları, yerel DLL yükleme, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı ve düzgün kapanış geçti. 0.2.1'in çıkarılmış uygulama dosyalarıyla gerçek arayüz, ikinci açılış, DPAPI şifreleme/okuma ve doğal kapanış iki Windows çalışmasında geçti. Taşınabilir 0.2.1 ve kurulum 0.2.2 paketlerinin yayın denetimleri başarısız oldu. **0.2.3'ün gerçek kurulumu, masaüstü kısayolu, kurulu arayüzü, DPAPI ve kaldırma kontrolü beklemede.** Mikrofon izni, Gemini yanıtı ve kesintisiz Türkçe ses görüşmesi çalıştırılmadı. Windows ARM veya 32 bit paket sunulmaz. Telefon erişimi ve arka planda sürekli dinleme bu masaüstü dosyasının tamamlanmış özellikleri değildir.
 
 GIDEON uygulamasının yayıncı sertifikası yoktur. Windows ek güvenlik kontrolü gösterebilir. Windows korumalarını kapatmayın; dosyanın kaynağını doğrulamadan çalıştırmayın.
 

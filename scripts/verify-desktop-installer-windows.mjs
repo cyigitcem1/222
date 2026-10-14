@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { once } from 'node:events';
 import { createReadStream } from 'node:fs';
-import { lstat, mkdir, mkdtemp, readFile, readdir, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -128,11 +128,16 @@ function assertOwnRegistry(state) {
   assert.ok(samePath(own.UninstallTarget, join(installDirectory, 'Uninstall GIDEON.exe')), 'Registered uninstaller does not belong to this test.');
   assert.ok(state.Records.filter(record => record.Scope === 'LocalMachine').every(record => !record.InstallPresent && !record.UninstallPresent), 'Per-user installer wrote a machine registration.');
 }
-function assertOwnRegistration(state) {
+async function assertOwnRegistration(state) {
   assertOwnRegistry(state);
   for (const kind of ['Desktop', 'StartMenu']) {
     const link = state.Links.find(link => link.Kind === kind);
-    assert.ok(link?.Exists && samePath(link.Target, installedExecutable) && link.Arguments === '', `${kind} shortcut does not target the installed GIDEON executable: ${JSON.stringify({ expected: installedExecutable, link })}`);
+    const detail = `${kind} shortcut does not target the installed GIDEON executable: ${JSON.stringify({ expected: installedExecutable, link })}`;
+    assert.ok(link?.Exists && typeof link.Target === 'string' && link.Arguments === '', detail);
+    await regular(link.Target); await regular(installedExecutable);
+    // Windows TEMP can use RUNNER~1 while the shell returns runneradmin.
+    // Compare the existing files' canonical paths, not their DOS alias spelling.
+    assert.ok(samePath(await realpath(link.Target), await realpath(installedExecutable)), detail);
   }
   assert.ok(state.Links.filter(link => link.Kind.startsWith('Shared')).every(link => !link.Exists), 'Per-user installer created a shared shortcut.');
 }
@@ -191,7 +196,19 @@ async function uninstall() {
     }
     await sleep(3000);
   }
-  const remainingFiles = await missing(installDirectory) ? [] : (await readdir(installDirectory)).slice(0, 40);
+  const remainingFiles = [];
+  let visitedDirectories = 0;
+  async function collect(directory) {
+    if (++visitedDirectories > 200 || remainingFiles.length >= 16) return;
+    const entries = await readdir(directory, { withFileTypes: true });
+    for (const entry of entries) {
+      if (remainingFiles.length >= 16) break;
+      const path = join(directory, entry.name);
+      if (entry.isDirectory() && !entry.isSymbolicLink()) await collect(path);
+      else remainingFiles.push({ path, length: path.length });
+    }
+  }
+  if (!(await missing(installDirectory))) await collect(installDirectory);
   throw new Error(`Own uninstaller did not remove the installed app, shortcuts and registration before its deadline: ${JSON.stringify({ ...after, remainingFiles })}`);
 }
 
@@ -221,7 +238,7 @@ async function main() {
   await run(installer, ['/S', `/D=${installDirectory}`], { label: stage });
   const installedState = await probe();
   if (registryOwnsTarget(installedState)) ownedInstall = true;
-  assertOwnRegistration(installedState);
+  await assertOwnRegistration(installedState);
   await regular(installedExecutable); await regular(join(installDirectory, 'Uninstall GIDEON.exe'));
   assert.ok(await missing(dataDirectory), 'Silent installer unexpectedly launched the app or created user data.');
   stage = 'installed file and source integrity';
