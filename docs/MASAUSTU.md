@@ -1,8 +1,8 @@
 # GIDEON masaüstü
 
-Windows x64 için tek dosya: **GIDEON-0.2.1-Windows.exe**. [Yayın sayfası](https://github.com/cyigitcem1/222/releases/latest). Dosyaya çift tıklayın. Node ve OpenClaw dosyanın içindedir; komut satırı, npm paket kurulumu ve yönetici kurulumu gerekmez. İlk açılışta dosyaların hazırlanması kısa bir süre alabilir.
+Windows x64 için tek dosya: **GIDEON-0.2.1-Windows.exe**. [Yayın sayfası](https://github.com/cyigitcem1/222/releases/latest). Dosyaya çift tıklayın. Node ve OpenClaw dosyanın içindedir; komut satırı, npm paket kurulumu ve yönetici kurulumu gerekmez. Dosyaların hazırlanması bilgisayara göre birkaç dakika sürebilir; bu sırada başlangıç görseli gösterilir.
 
-0.2.1, açılışı güçlendirir: GIDEON kullanıcı klasörü önce hazırlanır, başlangıç penceresi görünür açılır ve arayüz dosyasının yüklenmesi beklenir. Kullanıcının bildirdiği açılmama sorununun eski ve yeni Windows dosyalarıyla karşılaştırmalı kontrolü bekleniyor. Var olan notlar, konuşmalar ve şifreli anahtar üzerine yazılmaz; güncelleme için veri klasörünü silmeyin.
+0.2.0'ın gerçek Windows denemesinde ilk pencere açıldı; ikinci tıklama açık uygulamanın motor dosyalarını kaldırdı. 0.2.1 her taşınabilir açılış için ayrı geçici klasör kullanır. GIDEON kullanıcı klasörü önce hazırlanır, başlangıç penceresi görünür açılır ve arayüz dosyasının yüklenmesi beklenir. Var olan notlar, konuşmalar ve şifreli anahtar üzerine yazılmaz; güncelleme için veri klasörünü silmeyin.
 
 ## İlk açılış
 
@@ -30,9 +30,9 @@ Kalıcı notlar ve asıl konuşmalar resmî OpenClaw veri alanındadır. Önceki
 
 ## Doğrulama sınırları
 
-Arayüzün dört akışı Chromium'da taklit edilmiş bağlantı durumlarıyla; kontrolcünün anahtar/güvenlik/hata/başlatma işlemleri birim testlerinde; motorun açılışı ve düzgün kapanması gerçek OpenClaw ile Linux'ta test edildi. Son test sayıları ve kapsamı [doğrulama raporunda](DOGRULAMA.md).
+Linux'ta 59 birim ve 9 entegrasyon testi geçti. Arayüzün dört akışı Chromium'da taklit edilmiş bağlantı durumlarıyla; kontrolcünün anahtar/güvenlik/hata/başlatma işlemleri birim testlerinde; motorun açılışı ve düzgün kapanması gerçek OpenClaw ile Linux'ta test edildi. Sonuçların kapsamı [doğrulama raporunda](DOGRULAMA.md).
 
-Önceki sürümün Windows 2025 CI kontrolünde Microsoft imzaları, yerel DLL yükleme, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı ve düzgün kapanış geçti. **0.2.1 taşınabilir uygulamasının gerçek Windows arayüz açılışı ve DPAPI saklama/okuma kontrolü beklemede.** Tek pencere davranışı ve mikrofon izni çalıştırılmadı. Gemini yanıtı ve kesintisiz Türkçe ses görüşmesi için gerçek API erişimi gerekir; bu testler yapılmadı. Windows ARM veya 32 bit paket sunulmaz. Telefon erişimi ve arka planda sürekli dinleme bu masaüstü dosyasının tamamlanmış özellikleri değildir.
+Önceki sürümün Windows 2025 CI kontrolünde Microsoft imzaları, yerel DLL yükleme, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı ve düzgün kapanış geçti. 0.2.1'in gerçek Windows başlangıç arayüzü ve sandbox bağlantısı görüldü; ilk test, pencereyi denetleyen yardımcı komutun zaman aşımı nedeniyle tamamlanamadı. **Yeni taşınabilir dosyanın ikinci tıklama/kaynak bütünlüğü ve DPAPI saklama/okuma kontrolü beklemede.** Mikrofon izni, Gemini yanıtı ve kesintisiz Türkçe ses görüşmesi çalıştırılmadı. Windows ARM veya 32 bit paket sunulmaz. Telefon erişimi ve arka planda sürekli dinleme bu masaüstü dosyasının tamamlanmış özellikleri değildir.
 
 GIDEON uygulamasının yayıncı sertifikası yoktur. Windows ek güvenlik kontrolü gösterebilir. Windows korumalarını kapatmayın; dosyanın kaynağını doğrulamadan çalıştırmayın.
 

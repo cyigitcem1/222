@@ -161,8 +161,14 @@ public class GideonGuiWindowProbe {
   [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr handle,out Rect rect);
 }
 '@
-Add-Type -AssemblyName UIAutomationClient
-Add-Type -AssemblyName UIAutomationTypes
+$collectText=$false
+if($env:GIDEON_GUI_PROBE_MODE -eq 'diagnose'){
+  try{
+    Add-Type -AssemblyName UIAutomationClient
+    Add-Type -AssemblyName UIAutomationTypes
+    $collectText=$true
+  }catch{}
+}
 $windows=[System.Collections.Generic.List[object]]::new()
 $callback=[GideonGuiWindowProbe+Callback]{param($handle,$state)
   [uint32]$windowPid=0
@@ -173,7 +179,7 @@ $callback=[GideonGuiWindowProbe+Callback]{param($handle,$state)
   $rect=[GideonGuiWindowProbe+Rect]::new()
   [void][GideonGuiWindowProbe]::GetWindowRect($handle,[ref]$rect)
   $texts=@()
-  if([GideonGuiWindowProbe]::IsWindowVisible($handle)){
+  if($collectText -and [GideonGuiWindowProbe]::IsWindowVisible($handle)){
     try{
       $element=[System.Windows.Automation.AutomationElement]::FromHandle($handle)
       $condition=[System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::ControlTypeProperty,[System.Windows.Automation.ControlType]::Text)
@@ -197,11 +203,24 @@ async function nativeProbe(mode = 'probe') {
   let output = '', errors = '';
   helper.stdout.on('data', data => { output = (output + data).slice(-128_000); });
   helper.stderr.on('data', data => { errors = redact((errors + data).slice(-1000)); });
-  const timer = setTimeout(() => helper.kill(), 20_000);
+  let timer, timedOut = false;
   try {
-    const [code, signal] = await once(helper, 'close');
-    if (code !== 0 || signal) throw new Error(`Owned Windows process/window probe failed: ${errors || 'no helper diagnostic'}`);
+    const [code, signal] = await Promise.race([
+      once(helper, 'close'),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          timedOut = true;
+          try { helper.kill(); } catch {}
+          helper.stdout.destroy(); helper.stderr.destroy();
+          reject(new Error('Native helper deadline reached.'));
+        }, 30_000);
+      }),
+    ]);
+    if (code !== 0 || signal) throw new Error(`helper exit=${code ?? 'null'} signal=${signal ?? 'none'}`);
     return JSON.parse(output.replace(/^\uFEFF/, ''));
+  } catch (error) {
+    const diagnostic = errors || (timedOut ? '30s deadline reached' : error.code || error.message);
+    throw new Error(`Owned Windows process/window probe failed: mode=${mode}; timedOut=${timedOut}; ${redact(diagnostic).slice(0, 1000)}`);
   } finally { clearTimeout(timer); }
 }
 
@@ -358,7 +377,7 @@ catch (error) {
   for (const failure of rendererFailures) annotation('error', `Renderer: ${failure}`);
   if (temporary) {
     try {
-      const native = await nativeProbe();
+      const native = await nativeProbe('diagnose');
       annotation('notice', `Owned executable windows: ${JSON.stringify(native.Windows || [])}`);
     } catch { annotation('notice', 'Owned Windows UI/process diagnostic was unavailable.'); }
     try { capture((await readFile(join(temporary, 'electron.log'), 'utf8')).slice(-12_000)); } catch {}

@@ -1,11 +1,6 @@
 name: Diagnose published Windows launch
 
 on:
-  push:
-    branches: ['main']
-    paths:
-      - '.github/workflows/desktop-launch-diagnostic.yml'
-      - 'scripts/verify-desktop-launch-windows.mjs'
   workflow_dispatch:
 
 permissions:

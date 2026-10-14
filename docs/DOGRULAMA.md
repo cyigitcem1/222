@@ -4,18 +4,24 @@
 
 ## 0.2.1 açılış düzeltmesi
 
-Windows kullanıcısı uygulamaya çift tıklandığında pencere görünmediğini bildirdi. İlk inceleme kullanıcı veri klasörü ve pencere yükleme sırasına odaklandı. 0.2.1, `%APPDATA%\GIDEON` klasörünü önceden hazırlar, başlangıç penceresini görünür açar ve `loadFile` sonucunu bekler; mevcut veriyi veya kayıtlı anahtarı silmez. Eski uygulamanın gerçek Windows sonucu gelmeden bu değişiklikler kullanıcının hatasının kesin kök nedeni olarak sunulmaz.
+Windows kullanıcısı uygulamaya çift tıklandığında pencere görünmediğini bildirdi. İlk inceleme kullanıcı veri klasörü ve pencere yükleme sırasına odaklandı. Gerçek eski EXE denemesinde ilk pencere açıldığı için, kullanıcı klasörü hazırlığının eksikliği doğrulanmış kök neden olarak kabul edilmedi.
 
-İlk açılış davranışı için dört regresyon testi eklendi; birim test kataloğu toplam **59 test** oldu. Yeni toplam çalışmanın sonucu ayrıca doğrulanacaktır.
+[0.2.0 gerçek Windows tanısı](https://github.com/cyigitcem1/222/actions/runs/38575800650/job/115892435787): İlk görünür pencere, welcome ekranı ve sandbox IPC **270 saniyede** doğrulandı. İkinci taşınabilir açılıştan sonra ilk çalışan uygulamanın `runtime/scripts/gideon.mjs` ve `node/node.exe` dosyalarının kaybolduğu doğrulandı; kaynak bütünlüğü kontrolü başarısız oldu. Bu, ilk pencerenin hiç açılmadığı iddiasını bu CI ortamında desteklemiyor; ikinci açılışta çalışma dosyalarının korunmadığını gösteriyor.
 
-**Beklemede:** Eski ve yeni taşınabilir EXE'nin gerçek Windows masaüstünde karşılaştırmalı açılışı ve DPAPI şifreleme/okuma kontrolü. Önceki Node/Gateway denetimi, Electron uygulamasının açılışını test etmediğinden bu düzeltmenin Windows kabul kanıtı yerine geçmez. Yeni sonuç gelene kadar başarılı olarak işaretlenmez.
+0.2.1, `%APPDATA%\GIDEON` klasörünü önceden hazırlar, başlangıç penceresini görünür açar ve `loadFile` sonucunu bekler; mevcut veriyi veya kayıtlı anahtarı silmez. Taşınabilir dosya açılırken başlangıç görseli gösterilir. Her açılış için ayrı geçici çıkarma klasörü kullanılarak ikinci açılışın ilk uygulamanın motor dosyaları üzerinde temizlik yapması önlenir.
 
-## Önceki sürümde geçen kontroller
+İlk açılış davranışı için dört regresyon testi eklendi. Linux'ta son çalışmada **59 birim ve 9 entegrasyon testinin tamamı başarılı**, sıfır başarısız veya atlanan test. Bu kontroller [4a22061 kaynak sürümünde](https://github.com/cyigitcem1/222/commit/4a22061) uygulandı.
+
+[0.2.1 ilk Windows denemesi](https://github.com/cyigitcem1/222/actions/runs/38575800552/job/115893557361): Gerçek renderer, welcome ekranı ve sandbox köprüsü doğrulandı. Pencereyi inceleyen yardımcı komutun ilk soğuk UIAutomation çağrısı 20 saniyelik sınırı aştığı için test tamamlanamadı. Hata tanısında gerçek, görünür **1024 × 720 GIDEON penceresi** bulundu. Yardımcı kontrol normal CIM/User32 sorgusu ve 30 saniyelik sınırlı süreyle düzenlendi; ürünün GPU veya güvenlik ayarları değiştirilmedi.
+
+**Beklemede:** Düzeltilen yardımcıyla yeni taşınabilir EXE'nin tam pencere, ikinci tıklama/kaynak bütünlüğü ve DPAPI şifreleme/okuma kontrolü. Önceki Node/Gateway denetimi bu kontrollerin yerine geçmez. Tam sonuç gelene kadar tüm Windows kabulü başarılı olarak işaretlenmez. Yayın iş akışı bunların tamamı geçmeden sürümü yayımlamaz.
+
+## Geçen yerel kontroller
 
 - `npm ci --cache /workspace/.npm-cache --no-fund --no-audit`: kilit dosyasıyla kurulum başarılı; paket/TLS doğrulaması kapatılmadı.
 - `npm run setup`: gerçek OpenClaw şemasıyla başarılı. Tekrar kurulum kişisel notları ve erişim token'ını koruyor; yabancı kurulum ve bağlantılı dosyalar reddediliyor.
-- `npm test`: **55 test geçti**, sıfır başarısız veya atlanan test: 27 temel profil/izin/yedek testi, 26 masaüstü kontrolcü testi ve 2 masaüstü adres seçimi testi. Kontrolcü testlerinde güvenli saklama ve çocuk süreç adaptörleri taklit edilir; gerçek Windows DPAPI başarı kanıtı değildir. Onay politikası testleri araç çağrısı kancasında çalışır; gerçek kullanıcının onay ekranına tıklaması ayrıca test edilmelidir.
-- `npm run test:integration`: **7 temel entegrasyon alt kontrolü ve 1 masaüstü motor testi geçti**; Node raporunda üst testle birlikte toplam **9 test**, sıfır başarısız veya atlanan test. Son çalışma yaklaşık 94 saniye sürdü. Resmî Gateway kullanıldı; model yanıtları taklit edilmedi ve ücretli model isteği yapılmadı.
+- `npm test`: **59 test geçti**, sıfır başarısız veya atlanan test: 27 temel profil/izin/yedek testi, 26 masaüstü kontrolcü testi, 2 masaüstü adres seçimi testi ve 4 ilk açılış regresyon testi. Kontrolcü testlerinde güvenli saklama ve çocuk süreç adaptörleri taklit edilir; gerçek Windows DPAPI başarı kanıtı değildir. Onay politikası testleri araç çağrısı kancasında çalışır; gerçek kullanıcının onay ekranına tıklaması ayrıca test edilmelidir.
+- `npm run test:integration`: **7 temel entegrasyon alt kontrolü ve 1 masaüstü motor testi geçti**; Node raporunda üst testle birlikte toplam **9 test**, sıfır başarısız veya atlanan test. Son çalışma yaklaşık 93 saniye sürdü. Resmî Gateway kullanıldı; model yanıtları taklit edilmedi ve ücretli model isteği yapılmadı.
 - `npm run start:cloud`: hizmet başlatıldı; gerçek kimlik doğrulamalı sağlık kontrolü başarılı. Tekrar çalıştırıldığında mevcut hizmet kullanıldı.
 - `npm run doctor`: Node, sabitlenmiş OpenClaw, yapılandırma, Gateway ve yerel hafıza başarılı. Gemini ortam anahtarı eksik; canlı API ve mikrofon test edilmedi.
 - `git diff --check`: başarılı.
@@ -30,9 +36,9 @@ Resmî `security audit --json`: **0 kritik**, **1 uyarı**, **1 bilgi**. Uyarı 
 
 ## Canlı doğrulanmayanlar
 
-Gemini API yanıtı, Türkçe beş dakikalık çift yönlü ses ve söz kesme, gerçek modelin kişilik/hafıza davranışı, kullanıcının onay ekranında kabul/ret akışı, zamanı gelen bildirimin gerçek kullanıcıya teslimi, Windows başlatıcısı ve mikrofonu, telefon/HTTPS erişimi, Google Calendar/e-posta, otomatik maliyet raporu ve üç yıllık işletim. Bunlar yerel test başarısıyla tamamlanmış sayılmaz; ilgili kabul adımları KABUL-TESTLERI.md içindedir.
+Gemini API yanıtı, Türkçe beş dakikalık çift yönlü ses ve söz kesme, gerçek modelin kişilik/hafıza davranışı, kullanıcının onay ekranında kabul/ret akışı, zamanı gelen bildirimin gerçek kullanıcıya teslimi, Windows mikrofonu, telefon/HTTPS erişimi, Google Calendar/e-posta, otomatik maliyet raporu ve üç yıllık işletim. Bunlar yerel test başarısıyla tamamlanmış sayılmaz; ilgili kabul adımları KABUL-TESTLERI.md içindedir.
 
-Masaüstünün gerçek Windows arayüz açılışı, DPAPI anahtar saklama/okuma, tek pencere davranışı ve Electron mikrofon izni çalıştırılmadı. Windows 2025 üzerinde CI kontrolü çalıştırıldı: Microsoft imzaları ve VC 14.51 sürümü, uygulama klasöründeki DLL yükleme yolu, Windows yerel dosya sistemi bağlaması, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı, doğal 0 çıkışı, kilit temizliği ve portun kapanması geçti. Miras alınan Node derleme önbelleği de bu kontrolde vardı. [Gerçek Windows kontrolü](https://github.com/cyigitcem1/222/actions/runs/38543158138/job/115783160761) 14 Ekim 2026 tarihinde başarılı oldu. Bu, Electron arayüzüne tıklama veya DPAPI testi değildir. Portable paket yayıncı sertifikasıyla imzalı değildir. GitHub sürüm sayfasının belgede bulunması tek başına dosyanın yayımlandığını kanıtlamaz; yayın sonucu ayrı doğrulanmalıdır.
+0.2.1'in tam taşınabilir açılış/ikinci tıklama ve DPAPI kontrolleri yukarıdaki durumdadır; Electron mikrofon izni çalıştırılmadı. Önceki Windows 2025 CI kontrolünde Microsoft imzaları ve VC 14.51 sürümü, uygulama klasöründeki DLL yükleme yolu, Windows yerel dosya sistemi bağlaması, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı, doğal 0 çıkışı, kilit temizliği ve portun kapanması geçti. Miras alınan Node derleme önbelleği de bu kontrolde vardı. [Önceki Windows motor kontrolü](https://github.com/cyigitcem1/222/actions/runs/38543158138/job/115783160761) 14 Ekim 2026 tarihinde başarılı oldu. Bu, Electron arayüzüne tıklama veya DPAPI testi değildir. Portable paket yayıncı sertifikasıyla imzalı değildir. GitHub sürüm sayfasının belgede bulunması tek başına dosyanın yayımlandığını kanıtlamaz; yayın sonucu ayrı doğrulanmalıdır.
 
 ## Kaydedilen bulut ayarları
 

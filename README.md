@@ -4,13 +4,13 @@
 
 Windows sürümünün yayın sayfası: [GitHub Releases](https://github.com/cyigitcem1/222/releases/latest). Masaüstü dosyasının adı **GIDEON-0.2.1-Windows.exe**.
 
-**0.2.1 açılış düzeltmesi:** İlk kullanım için veri klasörü önceden hazırlanır, başlangıç penceresi görünür açılır ve arayüzün yüklenmesi beklenir. Önceki GIDEON verileri ve kayıtlı anahtar silinmez. Kullanıcının bildirdiği açılmama sorunu için eski ve yeni Windows dosyalarının karşılaştırmalı testi bekleniyor.
+**0.2.1 açılış düzeltmesi:** 0.2.0'ın gerçek Windows testinde, ikinci tıklamanın açık uygulamanın motor dosyalarını kaldırdığı doğrulandı. 0.2.1 her açılış için ayrı geçici klasör kullanır. Dosyalar hazırlanırken başlangıç görseli gösterilir; veri klasörü önceden hazırlanır, başlangıç penceresi görünür açılır ve arayüzün yüklenmesi beklenir. Önceki GIDEON verileri ve kayıtlı anahtar silinmez.
 
-Dosyaya çift tıklayın; ilk açılışta Gemini bağlantı anahtarınızı bir kez girip **Kaydet ve aç** seçeneğine basın. Sonraki açılışlarda sohbet otomatik açılır. Node ve OpenClaw programın içinde bulunur; terminal veya npm paket kurulumu gerekmez.
+Dosyaya çift tıklayın; dosyaların hazırlanması birkaç dakika sürebilir. Pencere açılınca Gemini bağlantı anahtarınızı bir kez girip **Kaydet ve aç** seçeneğine basın. Sonraki açılışlarda sohbet otomatik açılır. Node ve OpenClaw programın içinde bulunur; terminal veya npm paket kurulumu gerekmez.
 
 Anahtar Windows hesabınızla şifrelenir. Kişisel veriler uygulama dosyasının yanında tutulmaz; `%APPDATA%\GIDEON` altında kalır. **GIDEON → Bağlantı ayarları** menüsünden anahtarınızı değiştirebilir veya kaldırabilirsiniz. Programı kapatınca yalnızca kendisinin açtığı hizmet kapanır. İlk açılışta başka bir program aynı adresi kullanıyorsa otomatik boş adres seçilir; var olan profilin adresi sessizce değiştirilmez.
 
-Önceki sürümün Windows çalışma zamanı, gerçek Gateway açılışı, kimlik doğrulamalı bağlantısı ve düzgün kapanışı GitHub Actions Windows 2025 ortamında doğrulandı. **0.2.1 taşınabilir uygulamasının gerçek Windows pencere açılışı ve DPAPI testi şu an doğrulama bekliyor.** Gemini ve mikrofon testi yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
+Önceki sürümün Windows çalışma zamanı ve Gateway denetimleri başarılıydı. 0.2.1 testinde gerçek başlangıç arayüzü görüldü; **taşınabilir dosyanın ikinci tıklama/kaynak bütünlüğü ve DPAPI kontrolleri henüz tamamlanmadı.** Gemini ve mikrofon testi yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
 
 GIDEON, OpenClaw üzerinde çalışan Türkçe kişisel yardımcıdır. Resmî OpenClaw panelinde yazılı sohbet ve Google Live Voice, kalıcı konuşma kayıtları, kaynaklı hafıza araması ve onaylı yerel hatırlatmalar için hazırlanmıştır. Kimliği ve davranış kuralları tek `main` ajanında tutulur; kişisel bilgiler ilk kurulumda boş bırakılır.
 
@@ -79,7 +79,7 @@ Komut parola ve dosya bütünlüğünü doğrular; mevcut GIDEON üzerine yazmaz
 
 ## Ne doğrulandı, ne tamamlanmayı bekliyor?
 
-Bulutta **55 birim testi** geçti: temel profil/izin/yedek testleri, masaüstü anahtar ve hizmet kontrolcüsü, yerel adres seçimi. Gerçek OpenClaw entegrasyonunda panel, üç oturumun kalıcı arşivi, yerel hafıza araması, yeniden başlatma, görev kalıcılığı ve şifreli geri yükleme doğrulandı. Masaüstü motorunun açılışı ve kapanışı Linux'ta ayrıca test edildi; dört arayüz akışı taklit edilmiş bağlantı durumlarıyla denetlendi. Ayrıntılar [doğrulama raporunda](docs/DOGRULAMA.md).
+Bulutta **59 birim testi ve 9 entegrasyon testi** geçti. Birim testleri ilk açılış, profil/izin/yedek, masaüstü anahtar ve hizmet kontrolcüsü ile yerel adres seçimini kapsar. Gerçek OpenClaw entegrasyonunda panel, üç oturumun kalıcı arşivi, yerel hafıza araması, yeniden başlatma, görev kalıcılığı ve şifreli geri yükleme doğrulandı. Masaüstü motorunun açılışı ve kapanışı Linux'ta ayrıca test edildi; dört arayüz akışı taklit edilmiş bağlantı durumlarıyla denetlendi. Ayrıntılar [doğrulama raporunda](docs/DOGRULAMA.md).
 
 Yerel kurulum ve güvenlik testlerinin komutları [kabul testleri belgesindedir](docs/KABUL-TESTLERI.md). Bu teslimatta API anahtarı sağlanmadığından **gerçek Gemini yanıtı, beş dakikalık Türkçe canlı ses, persona/hafıza davranışı ve telefon erişimi canlı doğrulanmış değildir**. Bunları başarılı saymak için gerçek cihazda kabul testleri gerekir.
 
