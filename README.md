@@ -2,7 +2,9 @@
 
 ## Windows masaüstü — bir kez kurun, simgeden açın
 
-Windows sürümünün yayın sayfası: [GitHub Releases](https://github.com/cyigitcem1/222/releases/latest). Aday kurulum dosyası **GIDEON-0.2.3-Kurulum.exe**; gerçek Windows denetimleri geçtikten sonra yayımlanır.
+[**GIDEON 0.2.3 Windows kurulumunu indir**](https://github.com/cyigitcem1/222/releases/download/v0.2.3/GIDEON-0.2.3-Kurulum.exe) · 300,8 MB · [Sürüm sayfası](https://github.com/cyigitcem1/222/releases/tag/v0.2.3)
+
+**Yayımlandı.** Gerçek Windows kurulum denetimleri geçti; yayınlanan dosya indirilip tamamının SHA-256 bütünlüğü doğrulandı.
 
 Kurulum dosyasına çift tıklayın. Program Windows hesabınıza otomatik kurulur ve açılır; yönetici kurulumu, Node veya terminal gerekmez. İlk kurulum birkaç dakika sürebilir. GIDEON penceresinde Gemini API anahtarınızı bir kez girip **Kaydet ve aç** seçeneğine basın.
 
@@ -10,7 +12,7 @@ Sonraki açılışlarda masaüstündeki **GIDEON** simgesini kullanın. Uygulama
 
 Anahtar Windows hesabınızla şifrelenir. Kişisel veriler uygulama dosyasının yanında tutulmaz; `%APPDATA%\GIDEON` altında kalır. **GIDEON → Bağlantı ayarları** menüsünden anahtarınızı değiştirebilir veya kaldırabilirsiniz. Programı kapatınca yalnızca kendisinin açtığı hizmet kapanır. İlk açılışta başka bir program aynı adresi kullanıyorsa otomatik boş adres seçilir; var olan profilin adresi sessizce değiştirilmez.
 
-0.2.1'in arşivden çıkarılmış uygulama EXE'siyle Windows arayüzü, ikinci açılış ve DPAPI denetimleri geçti. Taşınabilir 0.2.1 ve kurulum 0.2.2 paketleri yayın denetimlerini geçemediği için yayımlanmadı. **0.2.3'ün gerçek kurulumu, masaüstü kısayolu ve kurulu uygulama denetimleri beklemede.** Gemini ve mikrofon testi yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
+**0.2.3'ün gerçek Windows kurulumu, kısayolları, kurulu arayüzü, ikinci açılışı, DPAPI anahtar saklama/okuma ve düzgün kapanışı doğrulandı.** Kaldırma uygulama dosyalarını temizledi ve kişisel veriyi temsil eden test kaydını korudu. [Windows test kanıtı](https://github.com/cyigitcem1/222/actions/runs/38596089277/job/115963939428). Gemini ve mikrofon testi yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
 
 GIDEON, OpenClaw üzerinde çalışan Türkçe kişisel yardımcıdır. Resmî OpenClaw panelinde yazılı sohbet ve Google Live Voice, kalıcı konuşma kayıtları, kaynaklı hafıza araması ve onaylı yerel hatırlatmalar için hazırlanmıştır. Kimliği ve davranış kuralları tek `main` ajanında tutulur; kişisel bilgiler ilk kurulumda boş bırakılır.
 
@@ -20,7 +22,7 @@ Bu paket OpenClaw **2026.10.3** sürümünü kullanır. Bilgisayarınızdaki mev
 
 Windows'ta paketi açtıktan sonra **GIDEON.cmd** dosyasına çift tıklayabilirsiniz. Gerekli paketleri kurar, GIDEON profilini hazırlar ve başlatır. Node.js'in aşağıda belirtilen sürümü önceden kurulu olmalıdır. Bu kısayol gerçek Windows cihazda henüz test edilmedi.
 
-Windows PowerShell veya bilgisayarınızdaki terminalde bu proje klasörünü açın. Node.js **24.16 veya üzeri bir 24.x sürümü**, ya da **26.1 veya üzeri** gerekir. Windows için WSL zorunlu değildir; Windows üzerinde çalıştırma bu bulut ortamında test edilmemiştir.
+Windows PowerShell veya bilgisayarınızdaki terminalde bu proje klasörünü açın. Node.js **24.16 veya üzeri bir 24.x sürümü**, ya da **26.1 veya üzeri** gerekir. Windows için WSL zorunlu değildir.
 
 ```sh
 npm ci
