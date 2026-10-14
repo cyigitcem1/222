@@ -19,6 +19,9 @@ extraResources:
       - node.exe
       - LICENSE
       - SHA256SUMS.txt
+      - "*.dll"
+      - VC_RUNTIME_NOTICE.txt
+      - VC_RUNTIME_SOURCE.json
   - from: ../.desktop-build/runtime
     to: runtime
     filter:

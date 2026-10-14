@@ -19,7 +19,7 @@ const state = join(temporary, 'state');
 const env = { ...process.env, GIDEON_STATE_DIR: state, GIDEON_PORT: '', GEMINI_API_KEY: '', GOOGLE_API_KEY: '' };
 
 async function command(args) {
-  const child = spawn(node, args, { cwd: runtime, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(node, ['--require', join(runtime, 'lib', 'windows-runtime-preload.cjs'), ...args], { cwd: runtime, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   child.stdout.on('data', chunk => { if (output.length < 1_000_000) output += chunk; });
   child.stderr.on('data', () => {});

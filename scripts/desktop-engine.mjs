@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ROOT, statePath, openclawEnv, assertProfileState } from '../lib/profile.mjs';
 import { acquireRuntime } from '../lib/runtime.mjs';
+import '../lib/windows-runtime-preload.cjs';
 
 // Run the official Gateway in this process. A private stdin pipe lets the GUI
 // request the same graceful shutdown as SIGTERM on Windows, without a console.

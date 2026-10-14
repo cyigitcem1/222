@@ -6,6 +6,7 @@ import { ROOT, VERSION, statePath, openclawEnv, setupProfile, assertProfileState
 import { createBackup, restoreBackup } from '../lib/backup.mjs';
 import { acquireRuntime, assertStopped } from '../lib/runtime.mjs';
 import { chooseDesktopPort } from '../lib/desktop-port.mjs';
+import '../lib/windows-runtime-preload.cjs';
 
 const cli = join(ROOT, 'node_modules', 'openclaw', 'openclaw.mjs');
 const state = statePath();
@@ -14,7 +15,8 @@ export async function runOpenClaw(args, { stateDir = state, env = process.env, c
   await assertProfileState(stateDir);
   await mkdir(join(stateDir, 'cache'), { recursive: true, mode: 0o700 });
   return new Promise((accept, reject) => {
-    const child = spawn(process.execPath, [cli, ...args], {
+    const preload = process.platform === 'win32' ? ['--require', join(ROOT, 'lib', 'windows-runtime-preload.cjs')] : [];
+    const child = spawn(process.execPath, [...preload, cli, ...args], {
       cwd: ROOT, env: openclawEnv(stateDir, env), stdio: capture ? ['ignore', 'pipe', 'pipe'] : 'inherit', windowsHide: true,
     });
     let stdout = '', stderr = '';

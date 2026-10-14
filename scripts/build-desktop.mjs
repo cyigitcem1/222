@@ -2,10 +2,11 @@
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { createReadStream, existsSync } from 'node:fs';
+import { createReadStream, createWriteStream, existsSync } from 'node:fs';
 import { cp, mkdir, open, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pipeline } from 'node:stream/promises';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const build = join(root, '.desktop-build');
@@ -17,6 +18,14 @@ const nodeBase = `https://nodejs.org/dist/v${nodeVersion}/`;
 const electronVersion = '44.7.1';
 const electronArchive = `electron-v${electronVersion}-win32-x64.zip`;
 const electronBase = `https://github.com/electron/electron/releases/download/v${electronVersion}/`;
+const vcSourceName = 'PowerToysUserSetup-0.101.2362.0-x64.exe';
+const vcSourceUrl = `https://github.com/microsoft/PowerToys/releases/download/v0.101.2362.0/${vcSourceName}`;
+const vcSourceSha256 = 'd56fa7130fa68afe553068c15a59a6b24c8dbcc9a0989a43ef0fc5a373230de3';
+const vcDlls = {
+  'vcruntime140.dll': 'd1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7',
+  'vcruntime140_1.dll': 'a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e',
+  'msvcp140.dll': '7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca',
+};
 const npmCache = process.env.GIDEON_NPM_CACHE || join(dirname(root), '.npm-cache');
 const builderCache = join(build, 'builder-cache');
 const electronCache = join(build, 'electron-cache');
@@ -97,6 +106,60 @@ async function prepareElectron() {
   if (!existsSync(archive) || await hash(archive) !== expected) await download(`${electronBase}${electronArchive}`, archive);
   if (await hash(archive) !== expected) throw new Error('Electron archive SHA256 mismatch; refusing to package downloaded framework');
   return expected;
+}
+
+async function prepareVcRuntime() {
+  const installer = join(downloads, vcSourceName);
+  if (!existsSync(installer) || await hash(installer) !== vcSourceSha256) await download(vcSourceUrl, installer);
+  if (await hash(installer) !== vcSourceSha256) throw new Error('Official Microsoft PowerToys source SHA256 mismatch; refusing to extract runtime');
+  await installBuildTools();
+  const extraction = join(build, 'vc-extraction');
+  await rm(extraction, { recursive: true, force: true });
+  await mkdir(extraction, { recursive: true });
+  let sevenZip;
+  if (process.platform === 'win32') {
+    // windows-2025 release runners include the full, trusted 7-Zip tool. The
+    // small builder 7za.exe omits the CAB/MSI formats needed for this extraction.
+    sevenZip = join(process.env.ProgramFiles || 'C:\\Program Files', '7-Zip', '7z.exe');
+    if (!existsSync(sevenZip)) throw new Error('The Windows release build requires full 7-Zip (the standard Windows GitHub runner includes it); the delivered app requires no installation');
+  } else {
+    process.env.ELECTRON_BUILDER_CACHE = builderCache;
+    const require = createRequire(join(root, 'desktop', 'package.json'));
+    sevenZip = await require('app-builder-lib/out/toolsets/7zip.js').getPath7za();
+  }
+  // These offsets belong only to the SHA256-pinned, signed source above. No
+  // installer is executed: extract its authenticated CAB/MSI containers.
+  const offset = 1222648;
+  const length = 295137487;
+  const descriptor = await open(installer, 'r');
+  const header = Buffer.alloc(12);
+  try { await descriptor.read(header, 0, header.length, offset); } finally { await descriptor.close(); }
+  if (header.subarray(0, 4).toString('ascii') !== 'MSCF' || header.readUInt32LE(8) !== length) throw new Error('Pinned Microsoft installer CAB layout does not match expected source');
+  const container = join(extraction, 'payload.cab');
+  await pipeline(createReadStream(installer, { start: offset, end: offset + length - 1 }), createWriteStream(container));
+  const msiDirectory = join(extraction, 'msi');
+  const cabinetDirectory = join(extraction, 'cabinets');
+  const dllDirectory = join(extraction, 'dlls');
+  await run(sevenZip, ['x', container, 'a2', `-o${msiDirectory}`, '-y']);
+  await run(sevenZip, ['x', join(msiDirectory, 'a2'), 'cab3.cab', `-o${cabinetDirectory}`, '-y']);
+  await run(sevenZip, ['x', join(cabinetDirectory, 'cab3.cab'), ...Object.keys(vcDlls), `-o${dllDirectory}`, '-y']);
+  const destination = join(build, 'node');
+  for (const [name, expected] of Object.entries(vcDlls)) {
+    const source = join(dllDirectory, name);
+    if (await hash(source) !== expected) throw new Error(`Microsoft runtime DLL does not match verified signed source: ${name}`);
+    const image = await readFile(source);
+    const pe = image.readUInt32LE(0x3c);
+    if (image.subarray(pe, pe + 4).toString('binary') !== 'PE\u0000\u0000' || image.readUInt16LE(pe + 4) !== 0x8664) throw new Error(`Microsoft runtime DLL is not Windows x64: ${name}`);
+    await cp(source, join(destination, name));
+  }
+  if (process.platform === 'win32') {
+    await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', "$ErrorActionPreference='Stop'; foreach ($name in @('vcruntime140.dll','vcruntime140_1.dll','msvcp140.dll')) { $p=Join-Path $env:GIDEON_VC_DIRECTORY $name; $s=Get-AuthenticodeSignature -LiteralPath $p; if ($s.Status -ne 'Valid' -or $s.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') { throw 'Microsoft runtime signature verification failed' }; $v=[System.Diagnostics.FileVersionInfo]::GetVersionInfo($p); if ($v.FileMajorPart -lt 14 -or ($v.FileMajorPart -eq 14 -and $v.FileMinorPart -lt 51)) { throw 'Microsoft runtime is older than the native toolset' } }; $s=Get-AuthenticodeSignature -LiteralPath $env:GIDEON_VC_INSTALLER; if ($s.Status -ne 'Valid' -or $s.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') { throw 'Microsoft source signature verification failed' }"], root, { GIDEON_VC_DIRECTORY: destination, GIDEON_VC_INSTALLER: installer });
+  }
+  const notice = `Microsoft Visual C++ Runtime 14.51.36247.0 (Windows x64)\nCopyright Microsoft Corporation.\n\nThese unmodified Microsoft-signed runtime binaries are governed by Microsoft Software License Terms and the applicable Visual Studio REDIST list. They are not licensed under PowerToys' MIT license.\n\nMicrosoft redistribution guidance: https://learn.microsoft.com/cpp/windows/redistributing-visual-cpp-files\nMicrosoft software license directory: https://visualstudio.microsoft.com/license-terms/\nOfficial source: ${vcSourceUrl}\nSource SHA256: ${vcSourceSha256}\n\nOnly vcruntime140.dll, vcruntime140_1.dll and msvcp140.dll are included. PowerToys itself is not installed or distributed with GIDEON. The original installer and DLL Authenticode signatures were verified as Microsoft Corporation; pinned hashes enforce identical bytes on every build. Windows builds additionally verify those signatures with the operating system.\n`;
+  await writeFile(join(destination, 'VC_RUNTIME_NOTICE.txt'), notice);
+  const metadata = { version: '14.51.36247.0', architecture: 'x64', source: vcSourceUrl, sourceSha256: vcSourceSha256, dlls: vcDlls, publisher: 'Microsoft Corporation', signatures: 'Original Authenticode content, chain and timestamp verified before pinning; Windows builds reverify with Get-AuthenticodeSignature', license: 'Microsoft Software License Terms and applicable Visual Studio REDIST list; see VC_RUNTIME_NOTICE.txt' };
+  await writeFile(join(destination, 'VC_RUNTIME_SOURCE.json'), `${JSON.stringify(metadata, null, 2)}\n`);
+  return metadata;
 }
 
 async function prepareRuntime() {
@@ -210,6 +273,15 @@ async function verifyPackageSources() {
   }
   const manifest = JSON.parse(await readFile(join(resources, 'runtime-manifest.json'), 'utf8'));
   if (await hash(join(resources, 'node', 'node.exe')) !== manifest.node.executableSha256) throw new Error('Packaged Node executable does not match verified runtime');
+  for (const [name, expected] of Object.entries(vcDlls)) {
+    const actual = await hash(join(resources, 'node', name));
+    if (actual !== expected) throw new Error(`Packaged Microsoft runtime DLL does not match signed source: ${name}`);
+    files[`node/${name}`] = actual;
+  }
+  for (const name of ['VC_RUNTIME_NOTICE.txt', 'VC_RUNTIME_SOURCE.json']) {
+    if (await hash(join(build, 'node', name)) !== await hash(join(resources, 'node', name))) throw new Error(`Packaged Microsoft runtime metadata is stale: ${name}`);
+    files[`node/${name}`] = await hash(join(resources, 'node', name));
+  }
   const dependencies = join(runtime, 'node_modules');
   const packagedDependencies = join(resources, 'runtime', 'node_modules');
   if (!existsSync(join(packagedDependencies, 'openclaw', 'openclaw.mjs'))) throw new Error('Packaged OpenClaw runtime dependencies are missing');
@@ -233,6 +305,7 @@ await mkdir(build, { recursive: true });
 if (!packageOnly && !verifyOnly) {
   const archiveSha256 = await prepareNode();
   const electronSha256 = await prepareElectron();
+  const vcRuntime = await prepareVcRuntime();
   const lockSha256 = await prepareRuntime();
   const manifest = {
     format: 1,
@@ -240,6 +313,7 @@ if (!packageOnly && !verifyOnly) {
     architecture: 'x64',
     node: { version: nodeVersion, source: `${nodeBase}${nodeArchive}`, archiveSha256, executableSha256: await hash(join(build, 'node', 'node.exe')) },
     electron: { version: electronVersion, source: `${electronBase}${electronArchive}`, archiveSha256: electronSha256 },
+    vcRuntime,
     openclaw: { version: '2026.10.3', packageLockSha256: lockSha256 },
     verification: 'Official Node/Electron SHA256 release manifests and npm package-lock integrity; TLS verification enabled',
   };
