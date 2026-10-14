@@ -76,7 +76,7 @@ jobs:
         shell: pwsh
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
-          node scripts/build-desktop.mjs --package-only 2>&1 | Tee-Object -FilePath windows-package.log
+          node scripts/build-desktop.mjs --package-only --installer-only 2>&1 | Tee-Object -FilePath windows-package.log
           $packageExit = $LASTEXITCODE
           if ($packageExit -ne 0) {
             $tail = (Get-Content windows-package.log -Tail 35) -join "`n"
@@ -96,27 +96,27 @@ jobs:
             Write-Output "::error title=Windows desktop::$message"
             exit $uiExit
           }
-      - name: Verify actual portable EXE launch
+      - name: Verify Windows installation and installed desktop launch
         shell: pwsh
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
           $version = (Get-Content desktop/package.json -Raw | ConvertFrom-Json).version
-          node scripts/verify-desktop-launch-windows.mjs "dist/desktop/GIDEON-$version-Windows.exe" 2>&1 | Tee-Object -FilePath windows-portable.log
-          $portableExit = $LASTEXITCODE
-          if ($portableExit -ne 0) {
-            $tail = (Get-Content windows-portable.log -Tail 35) -join "`n"
+          node scripts/verify-desktop-installer-windows.mjs "dist/desktop/GIDEON-$version-Kurulum.exe" 2>&1 | Tee-Object -FilePath windows-installer.log
+          $installerExit = $LASTEXITCODE
+          if ($installerExit -ne 0) {
+            $tail = (Get-Content windows-installer.log -Tail 35) -join "`n"
             $message = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
-            Write-Output "::error title=Windows portable launch::$message"
-            exit $portableExit
+            Write-Output "::error title=Windows installation::$message"
+            exit $installerExit
           }
-      - name: Publish verified portable release
+      - name: Publish verified Windows installer
         if: github.ref_type == 'tag'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $version = (Get-Content desktop/package.json -Raw | ConvertFrom-Json).version
-          $assets = @("dist/desktop/GIDEON-$version-Windows.exe", 'dist/desktop/SHA256SUMS.txt', 'dist/desktop/PACKAGED-SOURCES.json')
+          $assets = @("dist/desktop/GIDEON-$version-Kurulum.exe", 'dist/desktop/SHA256SUMS.txt', 'dist/desktop/PACKAGED-SOURCES.json')
           gh release view "$env:GITHUB_REF_NAME" --repo "$env:GITHUB_REPOSITORY" *> $null
           if ($LASTEXITCODE -eq 0) {
             throw 'Release already exists; refusing to overwrite published binaries.'

@@ -32,7 +32,8 @@ const electronCache = join(build, 'electron-cache');
 const prepareOnly = process.argv.includes('--prepare-only');
 const packageOnly = process.argv.includes('--package-only');
 const verifyOnly = process.argv.includes('--verify-only');
-const withInstaller = process.argv.includes('--installer');
+const installerOnly = process.argv.includes('--installer-only');
+const withInstaller = process.argv.includes('--installer') || installerOnly;
 if (withInstaller && process.platform !== 'win32') throw new Error('The optional NSIS installer must be built on Windows; Linux delivery uses the portable executable');
 
 async function run(command, args, cwd = root, env = {}) {
@@ -327,7 +328,8 @@ if (!prepareOnly) {
   const manifest = JSON.parse(await readFile(join(build, 'runtime-manifest.json'), 'utf8'));
   if (!existsSync(electronZip) || await hash(electronZip) !== manifest.electron?.archiveSha256) throw new Error('Verified Windows Electron archive not prepared');
   if (!verifyOnly) {
-    await run(process.execPath, [join(desktop, 'node_modules', 'electron-builder', 'cli.js'), '--config', 'electron-builder.yml', `--config.electronDist=${electronZip}`, '--win', 'portable', ...(withInstaller ? ['nsis'] : []), '--x64', '--publish', 'never'], desktop, {
+    const targets = installerOnly ? ['nsis'] : ['portable', ...(withInstaller ? ['nsis'] : [])];
+    await run(process.execPath, [join(desktop, 'node_modules', 'electron-builder', 'cli.js'), '--config', 'electron-builder.yml', `--config.electronDist=${electronZip}`, '--win', ...targets, '--x64', '--publish', 'never'], desktop, {
       ELECTRON_BUILDER_CACHE: builderCache,
       ELECTRON_CACHE: electronCache,
       ELECTRON_BUILDER_COMPRESSION_LEVEL: '7',
@@ -337,7 +339,7 @@ if (!prepareOnly) {
   const packagedFiles = await verifyPackageSources();
   const version = JSON.parse(await readFile(join(desktop, 'package.json'), 'utf8')).version;
   const output = join(root, 'dist', 'desktop');
-  const artifacts = [`GIDEON-${version}-Windows.exe`, ...(withInstaller ? [`GIDEON-${version}-Kurulum.exe`] : [])];
+  const artifacts = installerOnly ? [`GIDEON-${version}-Kurulum.exe`] : [`GIDEON-${version}-Windows.exe`, ...(withInstaller ? [`GIDEON-${version}-Kurulum.exe`] : [])];
   const sums = [];
   for (const name of artifacts) {
     const path = join(output, name);

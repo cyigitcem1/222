@@ -1,16 +1,16 @@
 # GIDEON masaüstü
 
-Windows x64 için tek dosya: **GIDEON-0.2.1-Windows.exe**. [Yayın sayfası](https://github.com/cyigitcem1/222/releases/latest). Dosyaya çift tıklayın. Node ve OpenClaw dosyanın içindedir; komut satırı, npm paket kurulumu ve yönetici kurulumu gerekmez. Dosyaların hazırlanması bilgisayara göre birkaç dakika sürebilir; bu sırada başlangıç görseli gösterilir.
+Windows x64 için önerilen dosya: **GIDEON-0.2.2-Kurulum.exe**. [Yayın sayfası](https://github.com/cyigitcem1/222/releases/latest). Dosyaya çift tıklayın; program Windows hesabınıza otomatik kurulur ve açılır. Node ve OpenClaw paketin içindedir; komut satırı, npm paket kurulumu ve yönetici kurulumu gerekmez. İlk kurulum bilgisayara göre birkaç dakika sürebilir.
 
-0.2.0'ın gerçek Windows denemesinde ilk pencere açıldı; ikinci tıklama açık uygulamanın motor dosyalarını kaldırdı. 0.2.1 her taşınabilir açılış için ayrı geçici klasör kullanır. GIDEON kullanıcı klasörü önce hazırlanır, başlangıç penceresi görünür açılır ve arayüz dosyasının yüklenmesi beklenir. Var olan notlar, konuşmalar ve şifreli anahtar üzerine yazılmaz; güncelleme için veri klasörünü silmeyin.
+0.2.2, dosyaları bir kez kurup sonraki kullanımlarda doğrudan kurulu uygulamayı açar. Taşınabilir 0.2.1 paketinin ikinci açılış/kapanış denetimi zaman sınırını aşınca yayın yapılmadı. Yeni kurulumun gerçek Windows denetimleri tamamlanmadan bu paket yayımlanmaz. Var olan notlar, konuşmalar ve şifreli anahtar üzerine yazılmaz; güncelleme için veri klasörünü silmeyin.
 
 ## İlk açılış
 
-1. Dosyayı açın.
+1. **GIDEON-0.2.2-Kurulum.exe** dosyasına çift tıklayıp kurulumun bitmesini bekleyin; GIDEON otomatik açılır.
 2. Gemini bağlantı anahtarınızı kutuya girin. Yoksa **Anahtar al** düğmesi Google'ın sayfasını açar.
 3. **Kaydet ve aç** düğmesine basın.
 
-Sonraki açılışlarda aynı dosyaya çift tıklamak yeterlidir. Program kendi hizmetini açar ve resmî OpenClaw sohbet penceresini getirir. Gemini/ChatGPT uygulama aboneliği API ücretini kapsadığı varsayılmaz; Google hesabınızdaki kota/ücret geçerlidir.
+Sonraki açılışlarda masaüstündeki **GIDEON** simgesine çift tıklayın. Kurulum dosyasını yeniden açmanız gerekmez; büyük arşiv her kullanımda tekrar açılmaz. Program kendi hizmetini açar ve resmî OpenClaw sohbet penceresini getirir. Gemini/ChatGPT uygulama aboneliği API ücretini kapsadığı varsayılmaz; Google hesabınızdaki kota/ücret geçerlidir.
 
 ## Kullanım
 
@@ -32,8 +32,8 @@ Kalıcı notlar ve asıl konuşmalar resmî OpenClaw veri alanındadır. Önceki
 
 Linux'ta 59 birim ve 9 entegrasyon testi geçti. Arayüzün dört akışı Chromium'da taklit edilmiş bağlantı durumlarıyla; kontrolcünün anahtar/güvenlik/hata/başlatma işlemleri birim testlerinde; motorun açılışı ve düzgün kapanması gerçek OpenClaw ile Linux'ta test edildi. Sonuçların kapsamı [doğrulama raporunda](DOGRULAMA.md).
 
-Önceki sürümün Windows 2025 CI kontrolünde Microsoft imzaları, yerel DLL yükleme, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı ve düzgün kapanış geçti. 0.2.1'in gerçek Windows başlangıç arayüzü ve sandbox bağlantısı görüldü; ilk test, pencereyi denetleyen yardımcı komutun zaman aşımı nedeniyle tamamlanamadı. **Yeni taşınabilir dosyanın ikinci tıklama/kaynak bütünlüğü ve DPAPI saklama/okuma kontrolü beklemede.** Mikrofon izni, Gemini yanıtı ve kesintisiz Türkçe ses görüşmesi çalıştırılmadı. Windows ARM veya 32 bit paket sunulmaz. Telefon erişimi ve arka planda sürekli dinleme bu masaüstü dosyasının tamamlanmış özellikleri değildir.
+Önceki Windows 2025 CI kontrolünde Microsoft imzaları, yerel DLL yükleme, gerçek Gateway açılışı, kimlik doğrulamalı bağlantı ve düzgün kapanış geçti. 0.2.1'in çıkarılmış uygulama dosyalarıyla gerçek arayüz, ikinci açılış, DPAPI şifreleme/okuma ve doğal kapanış iki Windows çalışmasında geçti. Taşınabilir paket denetimi aynı sonuca ulaşamadı ve yayın yapılmadı. **0.2.2'nin gerçek kurulumu, masaüstü kısayolu, kurulu arayüzü ve DPAPI kontrolü beklemede.** Mikrofon izni, Gemini yanıtı ve kesintisiz Türkçe ses görüşmesi çalıştırılmadı. Windows ARM veya 32 bit paket sunulmaz. Telefon erişimi ve arka planda sürekli dinleme bu masaüstü dosyasının tamamlanmış özellikleri değildir.
 
 GIDEON uygulamasının yayıncı sertifikası yoktur. Windows ek güvenlik kontrolü gösterebilir. Windows korumalarını kapatmayın; dosyanın kaynağını doğrulamadan çalıştırmayın.
 
-Geliştiriciler için üretim komutu: `node scripts/build-desktop.mjs`. Resmî Node/Electron SHA256 manifestleri, Microsoft kaynak/hash/imza kontrolleri ve npm kilit bütünlüğü korunur. Windows derlemesi PowerShell 7 ve tam 7-Zip gerektirir; indirilen uygulama bunları gerektirmez. Varsayılan çıktı taşınabilir Windows EXE'dir; isteğe bağlı NSIS kurulum dosyası yalnızca Windows derleme ortamında üretilir. Yerel derleme dışarı yayın yapmaz; GitHub Actions sürüm etiketiyle testlerden sonra yayınlar.
+Geliştiriciler için önerilen Windows üretim komutu: `node scripts/build-desktop.mjs --installer-only`. Resmî Node/Electron SHA256 manifestleri, Microsoft kaynak/hash/imza kontrolleri ve npm kilit bütünlüğü korunur. Windows derlemesi PowerShell 7 ve tam 7-Zip gerektirir; indirilen uygulama bunları gerektirmez. Önerilen dağıtım, yalnızca kullanıcının hesabına kurulan NSIS paketidir. Yerel derleme dışarı yayın yapmaz; GitHub Actions gerçek kurulum, kurulu uygulama ve aynı paketin Windows motor denetimleri geçtikten sonra yayınlar.
