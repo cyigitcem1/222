@@ -4,6 +4,7 @@ on:
   push:
     branches: ['main']
     tags: ['v*']
+    paths-ignore: ['docs/**', 'README.md']
   workflow_dispatch:
 
 permissions:
@@ -11,7 +12,7 @@ permissions:
 
 concurrency:
   group: gideon-release-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
 
 jobs:
   checks:

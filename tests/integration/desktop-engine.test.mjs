@@ -27,7 +27,7 @@ test('masaüstü motoru gerçek Gateway’i açar ve özel kanaldan düzgün kap
   assert.deepEqual(updated.plugins.load.paths, [join(ROOT, 'extensions', 'gideon-guard')]);
   assert.equal((await readdir(state)).filter(n => n.startsWith('openclaw.before-desktop-')).length, 1);
   const child = spawn(process.execPath, [join(ROOT, 'scripts', 'desktop-engine.mjs')], {
-    cwd: ROOT, env: { ...openclawEnv(state), GIDEON_STATE_DIR: state, GEMINI_API_KEY: '', GOOGLE_API_KEY: '' },
+    cwd: ROOT, env: { ...openclawEnv(state), GIDEON_STATE_DIR: state, GEMINI_API_KEY: '', GOOGLE_API_KEY: '', NODE_COMPILE_CACHE: join(state, 'cache', 'inherited-node-compile') },
     stdio: ['pipe', 'pipe', 'pipe'], detached: process.platform !== 'win32',
   });
   let output = ''; child.stdout.on('data', d => { output += d; }); child.stderr.on('data', d => { output += d; });

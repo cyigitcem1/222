@@ -16,7 +16,7 @@ for (const file of [node, join(resources, 'node', 'vcruntime140.dll')]) {
 }
 const temporary = await mkdtemp(join(tmpdir(), 'gideon-packaged-windows-'));
 const state = join(temporary, 'state');
-const env = { ...process.env, GIDEON_STATE_DIR: state, GIDEON_PORT: '', GEMINI_API_KEY: '', GOOGLE_API_KEY: '' };
+const env = { ...process.env, GIDEON_STATE_DIR: state, GIDEON_PORT: '', GEMINI_API_KEY: '', GOOGLE_API_KEY: '', NODE_COMPILE_CACHE: join(temporary, 'inherited-node-compile') };
 
 async function command(args) {
   const child = spawn(node, ['--require', join(runtime, 'lib', 'windows-runtime-preload.cjs'), ...args], { cwd: runtime, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });

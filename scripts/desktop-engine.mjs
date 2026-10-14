@@ -11,6 +11,10 @@ import '../lib/windows-runtime-preload.cjs';
 const state = statePath();
 await assertProfileState(state);
 Object.assign(process.env, openclawEnv(state));
+// The GUI owns this exact process. OpenClaw supports this opt-out from a
+// compile-cache launcher respawn, including when Node inherited a cache.
+process.env.NODE_DISABLE_COMPILE_CACHE = '1';
+delete process.env.NODE_COMPILE_CACHE;
 const c = JSON.parse(await readFile(join(state, 'openclaw.json'), 'utf8'));
 const release = await acquireRuntime(state);
 const cli = join(ROOT, 'node_modules', 'openclaw', 'openclaw.mjs');
@@ -40,4 +44,11 @@ process.on('exit', () => {
 });
 process.argv = [process.execPath, cli, 'gateway', 'run', '--bind', 'loopback', '--port', String(c.gateway.port)];
 try { await import(pathToFileURL(cli).href); }
-catch { console.error('GIDEON hizmeti başlatılamadı.'); await release(); process.exitCode = 1; }
+catch {
+  console.error('GIDEON hizmeti başlatılamadı.');
+  clearInterval(timer); process.stdin.destroy();
+  await release();
+  // A partially imported Gateway may own other handles; terminate only this
+  // failed, GUI-owned process after releasing its private lock.
+  process.exit(1);
+}
