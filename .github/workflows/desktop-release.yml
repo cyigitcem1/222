@@ -49,9 +49,29 @@ jobs:
           }
       - run: npm ci --no-fund --no-audit
       - name: Build and verify bundled files
-        run: node scripts/build-desktop.mjs
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          node scripts/build-desktop.mjs 2>&1 | Tee-Object -FilePath windows-build.log
+          $buildExit = $LASTEXITCODE
+          if ($buildExit -ne 0) {
+            $tail = (Get-Content windows-build.log -Tail 35) -join "`n"
+            $message = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Windows packaging::$message"
+            exit $buildExit
+          }
       - name: Verify native Windows engine
-        run: node scripts/verify-desktop-windows.mjs
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          node scripts/verify-desktop-windows.mjs 2>&1 | Tee-Object -FilePath windows-engine.log
+          $engineExit = $LASTEXITCODE
+          if ($engineExit -ne 0) {
+            $tail = (Get-Content windows-engine.log -Tail 35) -join "`n"
+            $message = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Windows engine::$message"
+            exit $engineExit
+          }
       - name: Publish verified portable release
         if: github.ref_type == 'tag'
         shell: pwsh
