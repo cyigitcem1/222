@@ -32,37 +32,45 @@ async function command(args) {
   } finally { clearTimeout(timer); }
 }
 
-let engine, closed;
+let engine, closed, engineOutput = '', token = '';
+const recordOutput = chunk => { engineOutput = (engineOutput + String(chunk)).slice(-16_000); };
+const diagnostics = () => engineOutput.replaceAll(token || 'unavailable-token-placeholder', '[REDACTED]').slice(-6000);
 try {
   await command(['-e', "require('koffi'); console.log('Windows FFI loaded');"]);
   await command(['-e', "require('@openclaw/fs-safe-win32-x64-msvc'); console.log('Windows native filesystem binding loaded');"]);
   await command([join(runtime, 'scripts', 'gideon.mjs'), 'setup-desktop']);
   const config = JSON.parse(await readFile(join(state, 'openclaw.json'), 'utf8'));
+  token = config.gateway.auth.token;
   const address = `http://127.0.0.1:${config.gateway.port}/healthz`;
   engine = spawn(node, [join(runtime, 'scripts', 'desktop-engine.mjs')], {
     cwd: runtime, env, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'],
   });
-  engine.stdout.on('data', () => {}); engine.stderr.on('data', () => {});
+  engine.stdout.on('data', recordOutput); engine.stderr.on('data', recordOutput);
   closed = once(engine, 'close');
   let ready = false;
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline && engine.exitCode === null && engine.signalCode === null) {
     try {
-      if ((await fetch(address, { signal: AbortSignal.timeout(1500) })).ok) { ready = true; break; }
+      const response = await fetch(address, { signal: AbortSignal.timeout(1500) });
+      const okay = response.ok; await response.body?.cancel();
+      if (okay) { ready = true; break; }
     } catch {}
     await new Promise(fulfill => setTimeout(fulfill, 200));
   }
   assert.ok(ready, 'Bundled Windows Gateway did not become ready.');
   const health = JSON.parse(await command([join(runtime, 'scripts', 'gideon.mjs'), 'openclaw', 'health', '--json']));
   assert.equal(health.ok, true, 'Authenticated Windows Gateway health failed.');
+  const stoppingAt = Date.now();
   engine.stdin.write('GIDEON_STOP\n');
-  const timer = setTimeout(() => engine.kill(), 15_000);
+  let forced = false;
+  const timer = setTimeout(() => { forced = true; engine.kill(); }, 330_000);
   let result;
   try { result = await closed; } finally { clearTimeout(timer); }
-  assert.deepEqual(result, [0, null], 'Windows Gateway did not shut down gracefully.');
+  assert.deepEqual(result, [0, null], `Windows Gateway did not shut down gracefully (forced=${forced}, elapsed=${Date.now() - stoppingAt}ms).\n${diagnostics()}`);
   await assert.rejects(readFile(join(state, 'launcher-runtime.json')), { code: 'ENOENT' });
   await assert.rejects(fetch(address, { signal: AbortSignal.timeout(1500) }));
   console.log('Bundled Windows FFI, native filesystem binding, setup, authenticated Gateway and graceful shutdown verified. No Gemini request made.');
+  if (process.env.GITHUB_ACTIONS === 'true') console.log(`::notice title=Windows native engine::Authenticated Gateway and graceful shutdown verified; stop took ${Date.now() - stoppingAt}ms. No Gemini request made.`);
 } finally {
   if (engine && engine.exitCode === null && engine.signalCode === null) { engine.kill(); await closed; }
   await rm(temporary, { recursive: true, force: true });

@@ -6,8 +6,8 @@ import { ROOT, statePath, openclawEnv, assertProfileState } from '../lib/profile
 import { acquireRuntime } from '../lib/runtime.mjs';
 import '../lib/windows-runtime-preload.cjs';
 
-// Run the official Gateway in this process. A private stdin pipe lets the GUI
-// request the same graceful shutdown as SIGTERM on Windows, without a console.
+// Run the official Gateway in this process. Its documented host lifeline makes
+// closing the private stdin pipe request graceful shutdown on Windows as well.
 const state = statePath();
 await assertProfileState(state);
 Object.assign(process.env, openclawEnv(state));
@@ -15,26 +15,24 @@ Object.assign(process.env, openclawEnv(state));
 // compile-cache launcher respawn, including when Node inherited a cache.
 process.env.NODE_DISABLE_COMPILE_CACHE = '1';
 delete process.env.NODE_COMPILE_CACHE;
+process.env.OPENCLAW_NO_RESPAWN = '1';
+process.env.OPENCLAW_GATEWAY_HOST_LIFELINE = 'stdin';
 const c = JSON.parse(await readFile(join(state, 'openclaw.json'), 'utf8'));
 const release = await acquireRuntime(state);
 const cli = join(ROOT, 'node_modules', 'openclaw', 'openclaw.mjs');
-let pendingStop = false;
-let stopped = false;
 let input = '';
-let timer;
-function stopWhenReady() {
-  if (pendingStop && !stopped && process.listenerCount('SIGTERM') > 0) {
-    stopped = true; clearInterval(timer); process.emit('SIGTERM');
-  }
-}
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', chunk => {
   input += chunk;
   if (input.length > 1024) input = '';
-  if (input.includes('GIDEON_STOP\n')) { pendingStop = true; input = ''; stopWhenReady(); }
+  if (input.includes('GIDEON_STOP\n')) {
+    input = '';
+    // OpenClaw listens for stdin close/end/error, including a pipe that closed
+    // before startup finished. Use the documented host lifeline instead of
+    // synthesizing process signals.
+    process.stdin.destroy();
+  }
 });
-process.stdin.on('end', () => { pendingStop = true; stopWhenReady(); });
-timer = setInterval(stopWhenReady, 200); timer.unref();
 process.on('exit', () => {
   try {
     const marker = join(state, 'launcher-runtime.json');
@@ -46,7 +44,7 @@ process.argv = [process.execPath, cli, 'gateway', 'run', '--bind', 'loopback', '
 try { await import(pathToFileURL(cli).href); }
 catch {
   console.error('GIDEON hizmeti başlatılamadı.');
-  clearInterval(timer); process.stdin.destroy();
+  process.stdin.destroy();
   await release();
   // A partially imported Gateway may own other handles; terminate only this
   // failed, GUI-owned process after releasing its private lock.

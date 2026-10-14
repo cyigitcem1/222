@@ -96,7 +96,8 @@ async function safeRead(target, { missingOkay = false, privateFile = false, maxi
 function createController({
   stateDir, nodePath, runtimeRoot, secureStore, onStatus = () => {}, spawnProcess = spawn,
   fetchImpl = globalThis.fetch, delay = ms => new Promise(accept => setTimeout(accept, ms)),
-  now = Date.now, startupTimeoutMs = 90_000, stopTimeoutMs = 15_000,
+  // OpenClaw foreground/Windows stop policy reserves 330 seconds for draining.
+  now = Date.now, startupTimeoutMs = 90_000, stopTimeoutMs = 330_000,
 } = {}) {
   if (![stateDir, nodePath, runtimeRoot].every(value => typeof value === 'string' && isAbsolute(value))) {
     throw new Error('GIDEON requires absolute application paths');
@@ -387,7 +388,7 @@ function createController({
           } catch {}
           check();
           if (accessible) {
-            const health = await runCommand(['openclaw', 'health', '--json'], current, Math.max(1, Math.min(10_000, current.deadline - now())));
+            const health = await runCommand(['openclaw', 'health', '--json'], current, Math.max(1, Math.min(30_000, current.deadline - now())));
             check();
             let verified = false;
             if (health.code === 0 && !health.overflow) {

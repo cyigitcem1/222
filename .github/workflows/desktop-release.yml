@@ -48,11 +48,11 @@ jobs:
             throw 'The tag must match desktop/package.json.'
           }
       - run: npm ci --no-fund --no-audit
-      - name: Build and verify bundled files
+      - name: Prepare signed Windows runtime
         shell: pwsh
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
-          node scripts/build-desktop.mjs 2>&1 | Tee-Object -FilePath windows-build.log
+          node scripts/build-desktop.mjs --prepare-only 2>&1 | Tee-Object -FilePath windows-build.log
           $buildExit = $LASTEXITCODE
           if ($buildExit -ne 0) {
             $tail = (Get-Content windows-build.log -Tail 35) -join "`n"
@@ -64,13 +64,25 @@ jobs:
         shell: pwsh
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
-          node scripts/verify-desktop-windows.mjs 2>&1 | Tee-Object -FilePath windows-engine.log
+          node scripts/verify-desktop-windows.mjs .desktop-build 2>&1 | Tee-Object -FilePath windows-engine.log
           $engineExit = $LASTEXITCODE
           if ($engineExit -ne 0) {
             $tail = (Get-Content windows-engine.log -Tail 35) -join "`n"
             $message = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
             Write-Output "::error title=Windows engine::$message"
             exit $engineExit
+          }
+      - name: Package verified Windows app
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          node scripts/build-desktop.mjs --package-only 2>&1 | Tee-Object -FilePath windows-package.log
+          $packageExit = $LASTEXITCODE
+          if ($packageExit -ne 0) {
+            $tail = (Get-Content windows-package.log -Tail 35) -join "`n"
+            $message = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Windows packaging::$message"
+            exit $packageExit
           }
       - name: Publish verified portable release
         if: github.ref_type == 'tag'
