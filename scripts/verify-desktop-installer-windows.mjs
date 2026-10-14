@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { once } from 'node:events';
 import { createReadStream } from 'node:fs';
-import { lstat, mkdir, mkdtemp, readFile, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readFile, readdir, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -16,7 +16,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const argument = process.argv[2];
 const budget = 600_000;
 let stage = 'preflight', temporary, installDirectory, installedExecutable, ownedInstall = false;
-let installerAttempted = false, uninstalled = false, cleanupBlocked = false;
+let installerAttempted = false, uninstallAttempted = false, uninstalled = false, cleanupBlocked = false;
 let dataMarker, dataDirectory, ownedDataDirectory = false, failed = false;
 const sleep = ms => new Promise(fulfill => setTimeout(fulfill, ms));
 function redact(value) {
@@ -103,7 +103,7 @@ foreach($item in @(@('Desktop','DesktopDirectory'),@('StartMenu','Programs'),@('
   $exists=Test-Path -LiteralPath $path
   $target=$null;$arguments=$null
   if($exists){$link=$shell.CreateShortcut($path);$target=$link.TargetPath;$arguments=$link.Arguments}
-  $links.Add([pscustomobject]@{Kind=$item[0];Exists=$exists;Target=$target;Arguments=$arguments})
+  $links.Add([pscustomobject]@{Kind=$item[0];Path=$path;Exists=$exists;Target=$target;Arguments=$arguments})
 }
 [pscustomobject]@{Records=$records.ToArray();Links=$links.ToArray();GideonProcesses=@(Get-Process -Name GIDEON -ErrorAction SilentlyContinue).Count} | ConvertTo-Json -Depth 5 -Compress
 `;
@@ -132,7 +132,7 @@ function assertOwnRegistration(state) {
   assertOwnRegistry(state);
   for (const kind of ['Desktop', 'StartMenu']) {
     const link = state.Links.find(link => link.Kind === kind);
-    assert.ok(link?.Exists && samePath(link.Target, installedExecutable) && link.Arguments === '', `${kind} shortcut does not target the installed GIDEON executable.`);
+    assert.ok(link?.Exists && samePath(link.Target, installedExecutable) && link.Arguments === '', `${kind} shortcut does not target the installed GIDEON executable: ${JSON.stringify({ expected: installedExecutable, link })}`);
   }
   assert.ok(state.Links.filter(link => link.Kind.startsWith('Shared')).every(link => !link.Exists), 'Per-user installer created a shared shortcut.');
 }
@@ -169,13 +169,15 @@ async function verifyInstalled(installer, version) {
 }
 
 async function uninstall() {
+  uninstallAttempted = true;
   stage = 'natural uninstall and own shortcut/registry cleanup';
   const state = await probe(); assertOwnRegistry(state);
   const uninstaller = join(installDirectory, 'Uninstall GIDEON.exe'); await regular(uninstaller);
   await run(uninstaller, ['/currentuser', '/S'], { label: 'Own silent GIDEON uninstaller' });
   const deadline = Date.now() + budget;
+  let lastNotice = 0, after;
   while (Date.now() < deadline) {
-    const after = await probe();
+    after = await probe();
     if (emptyRegistration(after) && await missing(installDirectory)) {
       assert.equal(after.GideonProcesses, 0, 'A GIDEON process survived uninstall.');
       ownedInstall = false;
@@ -183,9 +185,14 @@ async function uninstall() {
       annotation('notice', 'Own installed application, per-user registration and created shortcuts were removed.');
       return;
     }
+    if (Date.now() - lastNotice > 60_000) {
+      annotation('notice', `Own uninstall remaining state: ${JSON.stringify({ ...after, directoryExists: !(await missing(installDirectory)) })}`);
+      lastNotice = Date.now();
+    }
     await sleep(3000);
   }
-  throw new Error('Own uninstaller did not remove the installed app, shortcuts and registration before its deadline.');
+  const remainingFiles = await missing(installDirectory) ? [] : (await readdir(installDirectory)).slice(0, 40);
+  throw new Error(`Own uninstaller did not remove the installed app, shortcuts and registration before its deadline: ${JSON.stringify({ ...after, remainingFiles })}`);
 }
 
 async function main() {
@@ -242,7 +249,7 @@ finally {
       }
     } catch (error) { failed = true; cleanupBlocked = true; annotation('error', `Partial installation cleanup: ${error.message}`); }
   }
-  if (ownedInstall) {
+  if (ownedInstall && !uninstallAttempted) {
     try { await uninstall(); } catch (error) { failed = true; annotation('error', `Own installation cleanup: ${error.message}`); }
   }
   if (ownedDataDirectory) {
