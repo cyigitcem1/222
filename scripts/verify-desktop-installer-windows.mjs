@@ -95,9 +95,13 @@ async function credentialProbe(mode, label) {
   const sequestered = join(temporary, 'synthetic-upgrade-credential.bin');
   let credentialMoved = false;
   if (mode === 'decrypt') { await rename(credentials, sequestered); credentialMoved = true; }
+  const env = { ...process.env, GEMINI_API_KEY: '', GOOGLE_API_KEY: '', GIDEON_DESKTOP_DATA_DIR: dataDirectory };
+  // Electron enables Node mode when this variable is present, even when empty.
+  // The probe must launch the actual packaged app and its Windows safeStorage.
+  delete env.ELECTRON_RUN_AS_NODE;
   const child = spawn(installedExecutable, [`--inspect=127.0.0.1:${port}`], {
     cwd: installDirectory, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, GEMINI_API_KEY: '', GOOGLE_API_KEY: '', GIDEON_DESKTOP_DATA_DIR: dataDirectory, ELECTRON_RUN_AS_NODE: '' },
+    env,
   });
   const closed = once(child, 'close');
   // The app may fail before its inspector exists. Mark the close promise as
@@ -119,7 +123,7 @@ async function credentialProbe(mode, label) {
     const deadline = Date.now() + 60_000; let target;
     while (Date.now() < deadline) {
       assert.equal(spawnFailed, false, `${label}: installed app could not be started.`);
-      assert.equal(child.exitCode, null, `${label}: installed app exited before its inspector appeared.`);
+      assert.equal(child.exitCode, null, `${label}: actual packaged app exited before its inspector appeared (exit=${child.exitCode}, signal=${child.signalCode ?? 'none'}).`);
       try {
         const response = await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(1000) });
         target = (await response.json()).find(target => typeof target.webSocketDebuggerUrl === 'string');
