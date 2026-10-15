@@ -67,7 +67,7 @@ Yedek GIDEON veri klasörünün anlık görüntüsüdür; konuşmaları, notlar�
 
 Bu ilk yedek sürümü bellekte çalışır ve kaynak toplamını **128 MiB**, arşivi **256 MiB**, dosya/dizin sayısını **25.000** ile sınırlar. Sembolik bağlantılar ve özel dosyalar kabul edilmez. Sınır aşılırsa eksik yedek başarılı sayılmaz; veri silinmeden daha büyük arşive uygun yedekleme yöntemi ayrıca geliştirilmelidir. Yıllara yayılan saklama için bu sınır düzenli izlenmelidir.
 
-OpenClaw'ın her açılışta yeniden oluşturduğu `tmp/plugin-captures` kod önbelleği boş klasör olarak korunur; içindeki kurulu paket bağlantıları izlenmez ve yedeğe alınmaz. Bu istisna konuşma veritabanı, notlar, raporlar veya hesap dosyaları için geçerli değildir.
+OpenClaw'ın her açılışta yeniden oluşturduğu `tmp/plugin-captures` kod önbelleği boş klasör olarak korunur; içindeki kurulu paket bağlantıları izlenmez ve yedeğe alınmaz. `plugin-skills` içindeki otomatik beceri bağlantıları da hedefleri okunmadan atlanır; bu klasördeki normal dosyalar korunur. Bu istisnalar konuşma veritabanı, notlar, raporlar veya hesap dosyaları için geçerli değildir.
 
 Geri yükleme için:
 

@@ -105,6 +105,8 @@ test('resmî OpenClaw üzerinde GIDEON çalışma akışı', { timeout: 180_000 
     const archive = await createBackup({ stateDir, destination, password }); assert.ok(archive.fileCount > 6);
     await restoreBackup({ archivePath: destination, destination: restored, password });
     assert.deepEqual(await readFile(join(stateDir, 'openclaw.json')), await readFile(join(restored, 'openclaw.json')));
+    const database = join('agents', 'main', 'agent', 'openclaw-agent.sqlite');
+    assert.deepEqual(await readFile(join(stateDir, database)), await readFile(join(restored, database)));
     assert.deepEqual(await readFile(join(stateDir, 'workspace', 'memory', '2026-10-14.md')), await readFile(join(restored, 'workspace', 'memory', '2026-10-14.md')));
   });
 });
