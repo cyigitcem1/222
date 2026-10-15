@@ -1,6 +1,6 @@
 # GIDEON 0.2.4 — araştırma, dosya üretimi ve kalıcı profil
 
-**Hazırlanan kaynak sürümü. Windows paketi henüz yayımlanmış olarak doğrulanmadı.** Şu an doğrulanmış indirme [0.2.3 kurulumudur](https://github.com/cyigitcem1/222/releases/download/v0.2.3/GIDEON-0.2.3-Kurulum.exe); aşağıdaki yeni özellikler bu eski dosyada yoktur.
+Kaynaklı araştırma, indirilebilir raporlar, onaylı WhatsApp mesajları ve kişisel veriyi koruyan Windows güncellemesi. Kurulum dosyası `GIDEON-0.2.4-Kurulum.exe`; dosya bütünlüğü aynı yayındaki `SHA256SUMS.txt` ile kontrol edilir.
 
 ## Eklenen işlevler
 
@@ -26,11 +26,11 @@ WhatsApp'ı bağlamak için panelde QR akışını açın; iPhone'da **WhatsApp 
 
 ## Doğrulama durumu
 
-Yerel test turunda **85 birim testi** geçti. Gerçek SQLite deposundaki 120 mesaj, eski Windows fabrika talimatları, notlar, raporlar ve anahtar dosyası yükseltme/tekrar kurulum testleriyle korundu. Gerçek Talk kayıt yolunda 120 kesinleşmiş sentetik konuşma parçası, iki konuşmacı, tekrar denemelerde tekilleştirme, kapanış ve yeniden başlatma sonrasında doğrulandı. Bu son kontrol gerçek mikrofon veya Google ses hizmeti kullanmadı.
+**85 birim testi ve 12 entegrasyon kontrolü** temiz GitHub ortamında geçti. Gerçek SQLite deposundaki 120 mesaj, eski Windows fabrika talimatları, notlar, raporlar ve anahtar dosyası yükseltme/tekrar kurulum testleriyle korundu. Gerçek Talk kayıt yolunda 120 kesinleşmiş sentetik konuşma parçası, iki konuşmacı, tekrar denemelerde tekilleştirme, kapanış ve yeniden başlatma sonrasında doğrulandı. Bu son kontrol gerçek mikrofon veya Google ses hizmeti kullanmadı.
 
 Gerçek Gateway/WebChat entegrasyonu yerel bir test sağlayıcısıyla doğrulandı: `chat.send`, `gideon_document` aracını çalıştırdı; PDF eki gerçek `chat.history` sonucunda yer aldı; kimlik doğrulamalı HTTP indirmesi üretilen dosyayla bayt bayt aynı çıktı. Kimlik doğrulamasız istek `401`, yanlış konuşma ve sahte ek adresleri `404` döndürdü. Gateway yeniden başlatılınca aynı adres aynı dosyayı verdi. Bu test, Windows arayüzünde indirme düğmesine tıklama veya gerçek Gemini çağrısı değildir.
 
-**Bekleyen yayın denetimleri:** Gerçek Windows paketi, 0.2.3'ten yükseltme ve kurulu uygulamanın açılışı. Bu kontroller tamamlanmadan sürüm yayımlanmış olarak sunulmaz. Yayın kanıtı ve gerçek indirme sağlama toplamı doğrulama tamamlandığında buraya eklenecektir.
+**Windows yayın koşulları:** Yayın akışı, bu etiketten oluşturduğu gerçek paketi; Windows motoru, Türkçe PDF okuma/render, görünür arayüz, ikinci açılış, Windows şifreli anahtar saklama, yayımlanmış 0.2.3'ten yükseltme, bir saatlik sentetik konuşma veritabanı ve notların korunması, kaynak sağlama toplamları ve kaldırma kontrolleri geçmeden paylaşmaz. `PACKAGED-SOURCES.json` paketlenen kaynakların, `SHA256SUMS.txt` ise indirilebilir dosyaların bütünlük kaydıdır. [Yayın akışı](https://github.com/cyigitcem1/222/actions/workflows/desktop-release.yml).
 
 Bu geliştirme ortamında gerçek Gemini yanıtı, ücretli Google Search/PDF API çağrısı, gerçek WhatsApp hesabı ve gönderimi, mikrofon, bir saatlik canlı ses veya dışarıdan iPhone bağlantısı denenmedi. Kamu hukuk sitelerine istekler kaynak sunucuya ulaşmadan bulut proxy'sinde `CONNECT 403` ile engellendi; bu durum sitelerin kendisinin erişilemez olduğunu kanıtlamaz. Canlı hukuki araştırma başarılı olarak işaretlenmez.
 
