@@ -49,7 +49,10 @@ test('yeni token, yerel ağ sınırı ve kaynaklar doğrulanır', () => {
   assert.equal(a.gateway.bind, 'loopback'); assert.equal(a.gateway.auth.mode, 'token');
   assert.equal(a.tools.fs.workspaceOnly, true);
   assert.equal(a.tools.sessions.visibility, 'agent');
-  assert.ok(a.tools.deny.includes('exec')); assert.ok(a.tools.deny.includes('message'));
+  assert.ok(a.tools.deny.includes('exec')); assert.ok(a.tools.allow.includes('message'));
+  assert.ok(a.tools.allow.includes('gideon_document')); assert.ok(a.tools.allow.includes('web_search'));
+  assert.equal(a.browser.evaluateEnabled, false);
+  assert.equal(a.browser.ssrfPolicy.dangerouslyAllowPrivateNetwork, false);
   assert.equal(a.agents.defaults.heartbeat.every, '0m');
   assert.equal(a.plugins.entries['memory-core'].config.dreaming.enabled, false);
   assert.equal(a.skills.workshop.autonomous.mode, 'off');
@@ -76,6 +79,7 @@ test('başlatıcı ambient Gateway yetkilerini farklı profile taşımaz', () =>
   assert.equal(env.OPENCLAW_STATE_DIR, '/tmp/gideon');
   assert.equal(env.OPENCLAW_PROFILE, ''); assert.equal(env.OPENCLAW_GATEWAY_TOKEN, '');
   assert.equal(env.GEMINI_API_KEY, 'synthetic');
+  assert.equal(openclawEnv('/tmp/gideon', { GOOGLE_API_KEY: 'synthetic-google' }).GEMINI_API_KEY, 'synthetic-google');
   assert.equal(env.OPENCLAW_GATEWAY_URL, '');
   assert.equal(env.OPENCLAW_AGENT_DIR, '/tmp/gideon/agents/main/agent');
   assert.equal(env.PI_CODING_AGENT_DIR, env.OPENCLAW_AGENT_DIR);

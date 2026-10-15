@@ -184,9 +184,29 @@ async function prepareRuntime() {
     await rm(join(runtime, name), { recursive: true, force: true });
     await cp(join(root, name), join(runtime, name), { recursive: true, filter: source => !source.startsWith(join(root, 'scripts', 'build-desktop')) && !source.startsWith(join(root, 'scripts', 'release-desktop')) });
   }
+  // GIDEON owns this declared bundled tool and its source manifest. Copy it
+  // after npm's upstream lifecycle pruning and after refreshing our sources.
+  // No upstream host code or private-network media exception is modified.
+  await run(process.execPath, [join(runtime, 'scripts', 'install-document-plugin.mjs'), runtime]);
   const required = [
     'openclaw/dist/control-ui/index.html',
     'openclaw/dist/extensions/google',
+    'openclaw/dist/extensions/gideon-documents/index.js',
+    'openclaw/dist/extensions/gideon-documents/documents.js',
+    'openclaw/dist/extensions/gideon-documents/openclaw.plugin.json',
+    'openclaw/dist/extensions/gideon-documents/.gideon-bundled-source.json',
+    'openclaw/dist/extensions/gideon-documents/assets/DejaVuSans.ttf',
+    'openclaw/dist/extensions/gideon-documents/assets/FONT-LICENSE.txt',
+    'openclaw/dist/extensions/gideon-documents/assets/FONT-SOURCE.json',
+    'pdfkit/package.json',
+    'pdfkit/js/pdfkit.js',
+    'clawpdf/package.json',
+    'clawpdf/dist/vendor/pdfium.esm.wasm',
+    '@openclaw/whatsapp/package.json',
+    '@openclaw/whatsapp/openclaw.plugin.json',
+    '@openclaw/whatsapp/dist/index.js',
+    '@openclaw/whatsapp/dist/setup-entry.js',
+    '@openclaw/whatsapp/dist/auth-presence.js',
     '@esbuild/win32-x64/esbuild.exe',
     '@koromix/koffi-win32-x64',
     '@openclaw/fs-safe-win32-x64-msvc',
@@ -197,6 +217,40 @@ async function prepareRuntime() {
   ];
   for (const name of required) {
     if (!existsSync(join(runtime, 'node_modules', name))) throw new Error(`Windows runtime dependency missing: ${name}`);
+  }
+  for (const name of [
+    'extensions/gideon-guard/index.js',
+    'extensions/gideon-guard/policy.js',
+    'extensions/gideon-guard/openclaw.plugin.json',
+    'extensions/gideon-documents/index.js',
+    'extensions/gideon-documents/documents.js',
+    'extensions/gideon-documents/openclaw.plugin.json',
+    'extensions/gideon-documents/assets/DejaVuSans.ttf',
+    'extensions/gideon-documents/assets/FONT-LICENSE.txt',
+    'extensions/gideon-documents/assets/FONT-SOURCE.json',
+    'scripts/verify-documents-windows.mjs',
+    'scripts/install-document-plugin.mjs',
+    'templates/workspace/TOOLS.md',
+  ]) {
+    if (!existsSync(join(runtime, name)) || !(await stat(join(runtime, name))).isFile()) throw new Error(`Windows runtime capability file missing: ${name}`);
+  }
+  const fontSource = JSON.parse(await readFile(join(runtime, 'extensions', 'gideon-documents', 'assets', 'FONT-SOURCE.json'), 'utf8'));
+  if (!/^[a-f0-9]{64}$/.test(fontSource.sha256) || await hash(join(runtime, 'extensions', 'gideon-documents', 'assets', 'DejaVuSans.ttf')) !== fontSource.sha256) {
+    throw new Error('Bundled Unicode font differs from the licensed font source manifest');
+  }
+  const bundledDocuments = join(runtime, 'node_modules', 'openclaw', 'dist', 'extensions', 'gideon-documents');
+  const bundledSource = JSON.parse(await readFile(join(bundledDocuments, '.gideon-bundled-source.json'), 'utf8'));
+  const bundledManifest = JSON.parse(await readFile(join(bundledDocuments, 'openclaw.plugin.json'), 'utf8'));
+  if (bundledSource.product !== 'GIDEON' || bundledManifest.id !== 'gideon-documents' || JSON.stringify(bundledManifest.contracts?.tools) !== '["gideon_document"]') {
+    throw new Error('Bundled document tool ownership or declared contract is missing');
+  }
+  for (const { path, sha256 } of bundledSource.files) {
+    if (!/^(?:index\.js|documents\.js|package\.json|openclaw\.plugin\.json|assets\/(?:DejaVuSans\.ttf|FONT-LICENSE\.txt|FONT-SOURCE\.json))$/.test(path)
+      || !/^[a-f0-9]{64}$/.test(sha256)
+      || await hash(join(bundledDocuments, path)) !== sha256
+      || await hash(join(runtime, 'extensions', 'gideon-documents', path)) !== sha256) {
+      throw new Error('Bundled document tool differs from the reviewed GIDEON source');
+    }
   }
   // pi-tui publishes multiple platforms in one tarball; retain only Windows.
   for (const platform of ['darwin', 'linux']) {

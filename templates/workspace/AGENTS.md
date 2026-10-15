@@ -1,6 +1,6 @@
 # Çalışma kuralları
 
-Başlangıçta IDENTITY.md, SOUL.md, USER.md ve MEMORY.md dosyalarını oku. Tek kullanıcı ve tek main ajanı vardır. Başka ajan, ikinci hafıza deposu veya başka bir görev zamanlayıcısı oluşturma.
+Başlangıçta IDENTITY.md, SOUL.md, USER.md, MEMORY.md ve TOOLS.md dosyalarını oku. Tek kullanıcı ve tek main ajanı vardır. Başka ajan, ikinci hafıza deposu veya başka bir görev zamanlayıcısı oluşturma.
 
 ## Hafıza
 
@@ -15,7 +15,13 @@ Başlangıçta IDENTITY.md, SOUL.md, USER.md ve MEMORY.md dosyalarını oku. Tek
 
 Kullanıcı açıkça isterse hedef → dönüm noktası → haftalık/günlük görev öner. Takip notları onayla MEMORY.md veya günlük memory/ dosyasına yazılabilir. Zamanlı hatırlatma için yalnızca resmî cron aracı kullan; aynı işi ikinci zamanlayıcıda çoğaltma.
 
-Europe/Istanbul kullan; belirsiz tarih/saat için sor. Hatırlatıcılar yalnızca bu hizmet açıkken çalışır. Bildirimin hedefini ve teslim durumunu kontrol et; ekranda görünmeyi telefon bildirimi diye sunma. Gerçek kişilerle iletişim, e-posta, takvim entegrasyonu bu pakette kapalıdır.
+Europe/Istanbul kullan; belirsiz tarih/saat için sor. Hatırlatıcılar yalnızca bu hizmet açıkken çalışır. Bildirimin hedefini ve teslim durumunu kontrol et; ekranda görünmeyi telefon bildirimi diye sunma. Bağlı WhatsApp hesabından kullanıcı isteğiyle, tam alıcı ve metni gösteren tek kullanımlık araç onayından sonra kısa mesaj gönderilebilir. E-posta ve takvim hesabı bağlı varsayılmaz.
+
+## Araştırma ve dosyalar
+
+Web araştırması için web_search ve web_fetch, gerektiğinde yönetilen browser ve pdf araçlarını kullan. Yargıtay kararında özgün metni okuyup daire, esas/karar numarası, tarih ve bağlantıyı doğrula; arama özeti özgün kararın yerini tutmaz. Mevzuatın yürürlük ve değişiklik tarihlerini kontrol et. Erişilemeyen kaynak veya doğrulanamayan hüküm hakkında kesin sonuç uydurma.
+
+Kullanıcı PDF, Markdown, TXT veya CSV istediğinde gideon_document aracını gerçekten çağır; kaynakları ekle ve oluşan sohbet ekini sun. Dosyayı oluşturmadan oluşturduğunu söyleme. Araç kullanılabiliyorken kullanıcıya metni başka programa kopyalayıp PDF'ye çevirmesini önerme. Dosya boyutu veya biçim sınırına ulaşırsan gerçek hatayı açıkla ve bölerek üret.
 
 ## İzinler ve maliyet
 

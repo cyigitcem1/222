@@ -90,6 +90,26 @@ test('an 8 MiB native database-sized file roundtrips without regexp stack exhaus
   assert.deepEqual(await readFile(path.join(destination, databasePath)), database);
 });
 
+test('regenerable native plugin captures are omitted without following installed-code links', async t => {
+  const root = await sandbox(t);
+  const stateDir = await source(root);
+  const captures = path.join(stateDir, 'tmp', 'plugin-captures', 'synthetic-admission', 'node_modules');
+  await mkdir(captures, { recursive: true });
+  const external = path.join(root, 'installed-code'); await mkdir(external);
+  await writeFile(path.join(external, 'do-not-archive.txt'), 'External installed code is not personal state.');
+  await symlink(external, path.join(captures, 'openclaw'), 'dir');
+  await writeFile(path.join(stateDir, 'tmp', 'keep-user-file.txt'), 'Other temporary-directory files still survive.');
+  const archivePath = path.join(root, 'state.gideon');
+  const result = await createBackup({ stateDir, destination: archivePath, password });
+  assert.deepEqual(result.excludedPaths, ['tmp/plugin-captures']);
+  const restored = path.join(root, 'restored');
+  await restoreBackup({ archivePath, destination: restored, password });
+  assert.deepEqual(await readdir(path.join(restored, 'tmp', 'plugin-captures')), []);
+  assert.equal(await readFile(path.join(restored, 'tmp', 'keep-user-file.txt'), 'utf8'), 'Other temporary-directory files still survive.');
+  assert.deepEqual(await readFile(path.join(restored, 'agents', 'main', 'sessions', 'original.jsonl')), await readFile(path.join(stateDir, 'agents', 'main', 'sessions', 'original.jsonl')));
+  assert.equal(await readFile(path.join(external, 'do-not-archive.txt'), 'utf8'), 'External installed code is not personal state.');
+});
+
 test('wrong password and modified ciphertext leave no destination or temporary restore files', async (t) => {
   const root = await sandbox(t);
   const stateDir = await source(root);

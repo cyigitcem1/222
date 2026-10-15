@@ -122,9 +122,9 @@ async function main() {
     const requestedPort = Number(process.env.GIDEON_PORT || 18799);
     const result = await setupProfile(state, {
       port: command === 'setup-desktop' ? await chooseDesktopPort(state, requestedPort) : requestedPort,
-      model: process.env.GIDEON_MODEL || 'google/gemini-3.1-pro-preview',
+      model: process.env.GIDEON_MODEL || 'google/gemini-3.5-flash',
     });
-    if (command === 'setup-desktop') await bindDesktopRuntime(state);
+    await bindDesktopRuntime(state);
     await validate();
     console.log(result.created ? 'GIDEON profili oluşturuldu; mevcut OpenClaw kurulumuna dokunulmadı.' : 'GIDEON profili korundu; mevcut bilgiler üzerine yazılmadı.');
     console.log('Sonraki adım: npm start. Ayrı bir terminalde npm run dashboard paneli açar.');
@@ -163,6 +163,7 @@ async function main() {
     await mkdir(resolve(destination, '..'), { recursive: true, mode: 0o700 });
     const result = await createBackup({ stateDir: state, destination, password });
     console.log(`Şifreli yedek oluşturuldu: ${result.fileCount} dosya. Parolayı kaybederseniz yedek açılamaz.`);
+    if (result.excludedPaths.length) console.log('Yeniden oluşturulan eklenti önbelleği atlandı; konuşma ve kullanıcı dosyaları yedeklendi.');
   } else if (command === 'restore') {
     if (args.length !== 2) throw new Error('Kullanım: npm run restore -- YEDEK_DOSYASI BOŞ_HEDEF_KLASÖR');
     const destination = resolve(args[1]);

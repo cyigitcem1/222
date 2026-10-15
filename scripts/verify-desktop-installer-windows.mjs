@@ -1,13 +1,15 @@
 #!/usr/bin/env node
-// CI-only: install once into an owned directory, exercise the installed app,
-// then use its own uninstaller. No engine or Gemini request is started.
+// CI-only: upgrade the pinned published installer in an owned directory,
+// preserve real local session/credential fixtures, then exercise and uninstall
+// the current installed app. No engine or Gemini request is started.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { createReadStream } from 'node:fs';
-import { lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,13 +17,17 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const argument = process.argv[2];
 const budget = 600_000;
+const previousVersion = '0.2.3';
+const previousInstallerSha256 = 'b4209d9e235f71b60a542051d85667cdb8c8d69dd512711fd32dab8c91cd6c05';
+const previousInstallerUrl = `https://github.com/cyigitcem1/222/releases/download/v${previousVersion}/GIDEON-${previousVersion}-Kurulum.exe`;
 let stage = 'preflight', temporary, installDirectory, installedExecutable, ownedInstall = false;
 let installerAttempted = false, uninstallAttempted = false, uninstalled = false, cleanupBlocked = false;
 let dataMarker, dataDirectory, ownedDataDirectory = false, failed = false;
+let fakeKey = '';
 const sleep = ms => new Promise(fulfill => setTimeout(fulfill, ms));
 function redact(value) {
   let text = String(value);
-  for (const key of [process.env.GEMINI_API_KEY, process.env.GOOGLE_API_KEY]) if (key) text = text.split(key).join('[REDACTED]');
+  for (const key of [fakeKey, process.env.GEMINI_API_KEY, process.env.GOOGLE_API_KEY]) if (key) text = text.split(key).join('[REDACTED]');
   return text.replace(/gideon-native-smoke-[a-f0-9]+/gi, '[REDACTED]')
     .replace(/([#?&]token=)[^\s"'<>]+/gi, '$1[REDACTED]')
     .replace(/((?:api[_ -]?key|authorization|token)\s*[=:]\s*)[^\s,;]+/gi, '$1[REDACTED]')
@@ -46,8 +52,8 @@ async function hash(path) {
 }
 function samePath(a, b) { return typeof a === 'string' && resolve(a).toLowerCase() === resolve(b).toLowerCase(); }
 
-async function run(command, args, { timeout = budget, output = false, label = stage } = {}) {
-  const child = spawn(command, args, { cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, GEMINI_API_KEY: '', GOOGLE_API_KEY: '' } });
+async function run(command, args, { timeout = budget, output = false, label = stage, env = {} } = {}) {
+  const child = spawn(command, args, { cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ...env, GEMINI_API_KEY: '', GOOGLE_API_KEY: '' } });
   let tail = '', timer;
   const capture = data => { const safe = redact(data); tail = (tail + safe).slice(-4000); if (output) process.stdout.write(safe); };
   child.stdout.on('data', capture); child.stderr.on('data', capture);
@@ -68,6 +74,160 @@ async function run(command, args, { timeout = budget, output = false, label = st
     if (tail) annotation('notice', `${label} redacted output tail: ${tail}`);
     throw new Error(redact(error.message).slice(0, 1500));
   } finally { clearTimeout(timer); clearInterval(progress); }
+}
+
+async function availablePort() {
+  const server = createServer();
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const port = server.address().port;
+  await new Promise(fulfill => server.close(fulfill));
+  return port;
+}
+
+// Use each actual installed Electron version's Windows safeStorage and the same
+// persistent user-data/Local State. Temporarily sequester the owned synthetic
+// credential during the decrypt launch so it cannot auto-start the engine.
+// Only its own inspector is reachable, on an ephemeral loopback port.
+async function credentialProbe(mode, label) {
+  const port = await availablePort();
+  const credentials = join(dataDirectory, 'credentials.bin');
+  const sequestered = join(temporary, 'synthetic-upgrade-credential.bin');
+  let credentialMoved = false;
+  if (mode === 'decrypt') { await rename(credentials, sequestered); credentialMoved = true; }
+  const child = spawn(installedExecutable, [`--inspect=127.0.0.1:${port}`], {
+    cwd: installDirectory, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, GEMINI_API_KEY: '', GOOGLE_API_KEY: '', GIDEON_DESKTOP_DATA_DIR: dataDirectory, ELECTRON_RUN_AS_NODE: '' },
+  });
+  const closed = once(child, 'close');
+  // The app may fail before its inspector exists. Mark the close promise as
+  // observed immediately; its original rejection is still awaited below.
+  closed.catch(() => {});
+  let tail = '', socket, timer;
+  let spawnFailed = false;
+  child.once('error', () => { spawnFailed = true; });
+  const capture = data => { tail = redact(tail + String(data)).slice(-4000); };
+  child.stdout.on('data', capture); child.stderr.on('data', capture);
+  const pending = new Map(); let sequence = 0;
+  const command = (method, params) => new Promise((fulfill, reject) => {
+    const id = ++sequence;
+    const deadline = setTimeout(() => { pending.delete(id); reject(new Error(`${label}: inspector request timed out.`)); }, 20_000);
+    pending.set(id, { fulfill, reject, deadline });
+    socket.send(JSON.stringify({ id, method, params }));
+  });
+  try {
+    const deadline = Date.now() + 60_000; let target;
+    while (Date.now() < deadline) {
+      assert.equal(spawnFailed, false, `${label}: installed app could not be started.`);
+      assert.equal(child.exitCode, null, `${label}: installed app exited before its inspector appeared.`);
+      try {
+        const response = await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(1000) });
+        target = (await response.json()).find(target => typeof target.webSocketDebuggerUrl === 'string');
+        if (target) break;
+      } catch {}
+      await sleep(100);
+    }
+    assert.ok(target, `${label}: installed app inspector did not appear.`);
+    const endpoint = new URL(target.webSocketDebuggerUrl);
+    assert.equal(endpoint.protocol, 'ws:'); assert.equal(endpoint.hostname, '127.0.0.1');
+    assert.equal(Number(endpoint.port), port);
+    socket = new WebSocket(endpoint);
+    await Promise.race([
+      new Promise((fulfill, reject) => {
+        socket.addEventListener('open', fulfill, { once: true });
+        socket.addEventListener('error', () => reject(new Error(`${label}: own inspector connection failed.`)), { once: true });
+      }),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`${label}: own inspector connection timed out.`)), 10_000); }),
+    ]);
+    clearTimeout(timer);
+    socket.addEventListener('message', event => {
+      let response; try { response = JSON.parse(String(event.data)); } catch { return; }
+      const request = pending.get(response.id); if (!request) return;
+      pending.delete(response.id); clearTimeout(request.deadline);
+      if (response.error) request.reject(new Error(`${label}: own inspector rejected an operation.`));
+      else request.fulfill(response.result);
+    });
+    const operation = mode === 'encrypt'
+      ? `let window;for(let attempt=0;attempt<150;attempt++){window=e.BrowserWindow.getAllWindows()[0];try{if(window&&await window.webContents.executeJavaScript("typeof window.gideon?.saveKey==='function'"))break;}catch{}await new Promise(resolve=>setTimeout(resolve,100));}if(!window)throw new Error('Owned setup window unavailable');const saved=await window.webContents.executeJavaScript(${JSON.stringify(`window.gideon.saveKey(${JSON.stringify(fakeKey)})`)});return saved?.hasKey===true&&saved?.gatewayReady===false&&fs.existsSync(${JSON.stringify(credentials)});`
+      : `return e.safeStorage.decryptString(fs.readFileSync(${JSON.stringify(sequestered)}))===${JSON.stringify(fakeKey)};`;
+    const result = await command('Runtime.evaluate', {
+      expression: `(async()=>{const r=process.mainModule.require.bind(process.mainModule);const e=r('electron');const fs=r('node:fs');await e.app.whenReady();if(!e.safeStorage.isEncryptionAvailable())throw new Error('Windows secure storage unavailable');${operation}})()`,
+      awaitPromise: true, returnByValue: true,
+    });
+    assert.ok(!result.exceptionDetails && result.result?.value === true, `${label}: Windows encrypted credential did not round-trip.`);
+    await command('Runtime.evaluate', { expression: "(()=>{const e=process.mainModule.require('electron');setTimeout(()=>e.app.quit(),100);return true;})()", returnByValue: true });
+    socket.close(); socket = undefined;
+    const result_ = await Promise.race([
+      closed,
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`${label}: installed app did not exit naturally.`)), 30_000); }),
+    ]);
+    assert.deepEqual(result_, [0, null], `${label}: installed app did not exit naturally.`);
+    assert.ok(await missing(join(dataDirectory, 'state', 'launcher-runtime.json')), `${label}: credential probe unexpectedly started an engine.`);
+  } catch (error) {
+    if (tail) annotation('notice', `${label} output tail: ${tail}`);
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    for (const request of pending.values()) { clearTimeout(request.deadline); request.reject(new Error('Own inspector closed.')); }
+    socket?.close();
+    if (child.pid && child.exitCode === null && child.signalCode === null) {
+      // The exact still-running child PID owns this tree; never terminate
+      // processes by shared application name or touch an unrelated app instance.
+      await run('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { timeout: 30_000, label: `${label}: owned process cleanup` }).catch(() => {});
+      await Promise.race([closed.catch(() => {}), sleep(5000)]);
+    }
+    if (credentialMoved) {
+      assert.ok(await missing(credentials), 'Credential probe unexpectedly recreated the retained credential path.');
+      await rename(sequestered, credentials);
+    }
+  }
+}
+
+// This worker resolves only the shipped public SDK. It writes genuine SQLite
+// session rows and transcript events, rather than creating a lookalike database.
+const sessionFixtureScript = String.raw`
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+const [runtime,stateDir,mode,sessionId] = process.argv.slice(2);
+const {openclawEnv}=await import(pathToFileURL(join(runtime,'lib','profile.mjs')).href);
+const env=openclawEnv(stateDir,{...process.env,GEMINI_API_KEY:'',GOOGLE_API_KEY:''});
+Object.assign(process.env,env);
+const store=await import(pathToFileURL(join(runtime,'node_modules','openclaw','dist','plugin-sdk','session-store-runtime.js')).href);
+const transcript=await import(pathToFileURL(join(runtime,'node_modules','openclaw','dist','plugin-sdk','session-transcript-runtime.js')).href);
+const config=JSON.parse(await readFile(join(stateDir,'openclaw.json'),'utf8'));
+const scope={agentId:'main',sessionKey:'agent:main:main',sessionId,storePath:join(stateDir,'agents','main','agent','openclaw-agent.sqlite'),env};
+const startedAt=Date.parse('2026-10-14T17:00:00.000Z');
+const messages=Array.from({length:61},(_,minute)=>({
+  message:{role:'user',content:[{type:'text',text:'SENTETİK TEST '+minute+'. dakika: Yarın İzmir yolculuğum var; konuşmanın bu bölümünü koru.'}],timestamp:startedAt+minute*60000},
+  now:startedAt+minute*60000
+}));
+if(mode==='seed'){
+  await store.upsertSessionEntry({...scope,entry:{sessionId,updatedAt:startedAt+3600000,sessionStartedAt:startedAt,lastInteractionAt:startedAt+3600000,chatType:'direct',label:'Sentetik bir saatlik konuşma',providerOverride:'google',modelOverride:'gemini-3.1-pro-preview'}});
+  const results=await transcript.appendSessionTranscriptMessagesByIdentity({...scope,config,cwd:join(stateDir,'workspace'),messages});
+  assert.equal(results.length,61);assert.ok(results.every(result=>result.appended));
+}
+const entry=store.getSessionEntry(scope);assert.equal(entry?.sessionId,sessionId);assert.equal(entry?.modelOverride,'gemini-3.1-pro-preview');
+const events=store.loadTranscriptEventsSync(scope).filter(event=>event.type==='message');
+assert.equal(events.length,61);assert.deepEqual(events.map(event=>event.message),messages.map(append=>append.message));
+console.log('PASS: shipped SDK '+mode+' verified 61 persisted message events spanning one hour in the active SQLite store.');
+`;
+
+async function runProfileSetup(label) {
+  const resources = join(installDirectory, 'resources');
+  const runtime = join(resources, 'runtime');
+  await run(join(resources, 'node', 'node.exe'), ['--require', join(runtime, 'lib', 'windows-runtime-preload.cjs'), join(runtime, 'scripts', 'gideon.mjs'), 'setup-desktop'], {
+    timeout: 120_000, output: true, label, env: { GIDEON_STATE_DIR: join(dataDirectory, 'state'), GIDEON_NO_OPEN: '1' },
+  });
+}
+
+async function runSessionFixture(mode, sessionId) {
+  const resources = join(installDirectory, 'resources');
+  const runtime = join(resources, 'runtime');
+  await run(join(resources, 'node', 'node.exe'), ['--require', join(runtime, 'lib', 'windows-runtime-preload.cjs'), join(temporary, 'session-fixture.mjs'), runtime, join(dataDirectory, 'state'), mode, sessionId], {
+    timeout: 90_000, output: true, label: `Installed SDK ${mode} of synthetic one-hour conversation`,
+  });
 }
 
 // GUID is the pinned electron-builder v5 UUID for appId tr.gideon.desktop.
@@ -140,6 +300,13 @@ async function assertOwnRegistration(state) {
     assert.ok(samePath(await realpath(link.Target), await realpath(installedExecutable)), detail);
   }
   assert.ok(state.Links.filter(link => link.Kind.startsWith('Shared')).every(link => !link.Exists), 'Per-user installer created a shared shortcut.');
+}
+
+async function assertInstalledVersion(version) {
+  const require = createRequire(join(root, 'desktop', 'package.json'));
+  const asar = require('@electron/asar');
+  const packaged = JSON.parse(asar.extractFile(join(installDirectory, 'resources', 'app.asar'), 'package.json').toString('utf8'));
+  assert.equal(packaged.version, version, 'Installed application version does not match the intended upgrade stage.');
 }
 
 async function verifyInstalled(installer, version) {
@@ -230,28 +397,89 @@ async function main() {
   // has no spaces; refuse another layout rather than testing a different path.
   assert.ok(!/\s/.test(installDirectory), 'CI install target must have no whitespace for the standard NSIS /D parameter.');
   await writeFile(join(temporary, 'probe.ps1'), probeScript);
+  await writeFile(join(temporary, 'session-fixture.mjs'), sessionFixtureScript);
   const before = await probe();
   assert.ok(emptyRegistration(before), 'Existing GIDEON installation or shortcuts are protected; smoke refused.');
   assert.equal(before.GideonProcesses, 0, 'Existing GIDEON processes are protected; smoke refused.');
-  stage = 'actual per-user silent installation';
+  stage = 'download and authenticate published previous installer';
+  const previousInstaller = join(temporary, `GIDEON-${previousVersion}-Kurulum.exe`);
+  await run('curl.exe', ['--fail', '--location', '--show-error', '--silent', '--max-time', '240', '--output', previousInstaller, previousInstallerUrl], { timeout: 250_000, label: stage });
+  assert.equal(await hash(previousInstaller), previousInstallerSha256, 'Published previous installer does not match the pinned verified release; upgrade smoke refused.');
+  stage = 'actual previous per-user silent installation';
   installerAttempted = true;
-  await run(installer, ['/S', `/D=${installDirectory}`], { label: stage });
+  await run(previousInstaller, ['/S', `/D=${installDirectory}`], { label: stage });
   const installedState = await probe();
   if (registryOwnsTarget(installedState)) ownedInstall = true;
   await assertOwnRegistration(installedState);
   await regular(installedExecutable); await regular(join(installDirectory, 'Uninstall GIDEON.exe'));
   assert.ok(await missing(dataDirectory), 'Silent installer unexpectedly launched the app or created user data.');
-  stage = 'installed file and source integrity';
-  await verifyInstalled(installer, desktopPackage.version);
-  stage = 'actual installed GUI, second click and Windows DPAPI';
-  await run(process.execPath, [join(root, 'scripts', 'verify-desktop-launch-windows.mjs'), installedExecutable], { output: true, label: stage });
-  assert.ok(await missing(dataDirectory), 'Isolated GUI smoke changed the normal GIDEON user data directory.');
+  await assertInstalledVersion(previousVersion);
   await mkdir(dataDirectory); ownedDataDirectory = true;
   dataMarker = join(dataDirectory, `installer-test-${randomBytes(12).toString('hex')}.txt`);
-  await writeFile(dataMarker, 'Owned CI marker: uninstall must preserve application data.\n', { flag: 'wx' });
+  const markerText = 'Owned CI marker: upgrades and uninstall must preserve application data.\n';
+  await writeFile(dataMarker, markerText, { flag: 'wx' });
+  stage = 'previous installed profile and active one-hour SQLite conversation';
+  await runProfileSetup(stage);
+  const stateDirectory = join(dataDirectory, 'state');
+  const configPath = join(stateDirectory, 'openclaw.json');
+  const oldConfig = JSON.parse(await readFile(configPath, 'utf8'));
+  const oldAgentInstructions = await readFile(join(stateDirectory, 'workspace', 'AGENTS.md'));
+  assert.equal(oldConfig.agents.defaults.model.primary, 'google/gemini-3.1-pro-preview');
+  const userPath = join(stateDirectory, 'workspace', 'USER.md');
+  const memoryPath = join(stateDirectory, 'workspace', 'MEMORY.md');
+  const dailyPath = join(stateDirectory, 'workspace', 'memory', '2026-10-14.md');
+  await writeFile(userPath, '# Sentetik kullanıcı tercihi\nTürkçe konuş; İzmir yolculuğu notlarımı koru.\n');
+  await writeFile(memoryPath, '# Sentetik kalıcı hafıza\nYarın İzmir yolculuğum var. Bir saatlik konuşmanın notları güncellemede silinmemeli.\n');
+  await writeFile(dailyPath, '# Sentetik günlük not\nProgram güncellemesi kullanıcı notlarını değiştirmemeli.\n', { flag: 'wx' });
+  const sessionId = randomUUID();
+  await runSessionFixture('seed', sessionId);
+  stage = 'previous installed Electron Windows encrypted credential fixture';
+  fakeKey = `gideon-native-smoke-${randomBytes(20).toString('hex')}`;
+  await credentialProbe('encrypt', stage);
+  const credentialPath = join(dataDirectory, 'credentials.bin');
+  const credentialBytes = await readFile(credentialPath);
+  assert.ok(credentialBytes.length > 0 && !credentialBytes.includes(Buffer.from(fakeKey)), 'Previous credential fixture was not encrypted.');
+  const sqlitePath = join(stateDirectory, 'agents', 'main', 'agent', 'openclaw-agent.sqlite');
+  const protectedPaths = [dataMarker, userPath, memoryPath, dailyPath, credentialPath, sqlitePath];
+  const protectedHashes = new Map(await Promise.all(protectedPaths.map(async path => [path, await hash(path)])));
+  const assertPreserved = async label => {
+    for (const [path, expected] of protectedHashes) assert.equal(await hash(path), expected, `${label}: saved user data changed (${basename(path)}).`);
+  };
+  stage = 'actual current installer over previous installed version';
+  await run(installer, ['/S', `/D=${installDirectory}`], { label: stage });
+  await assertOwnRegistration(await probe());
+  await assertInstalledVersion(desktopPackage.version);
+  await assertPreserved('Installer upgrade');
+  stage = 'installed file and source integrity';
+  await verifyInstalled(installer, desktopPackage.version);
+  stage = 'new installed profile migration without memory loss';
+  await runProfileSetup(stage);
+  await assertPreserved('Profile migration');
+  const migrated = JSON.parse(await readFile(configPath, 'utf8'));
+  assert.ok(migrated.gateway.auth.token === oldConfig.gateway.auth.token, 'Profile migration replaced the saved gateway token.');
+  assert.equal(migrated.agents.defaults.model.primary, oldConfig.agents.defaults.model.primary, 'Profile migration replaced the chosen model.');
+  assert.equal(migrated.session.reset.mode, 'none', 'Profile migration enabled automatic session resets.');
+  assert.equal(JSON.parse(await readFile(join(stateDirectory, 'gideon-install.json'), 'utf8')).capabilitiesRevision, 2, 'New installed capabilities were not migrated.');
+  assert.ok(!oldAgentInstructions.equals(await readFile(join(stateDirectory, 'workspace', 'AGENTS.md'))), 'Unmodified old factory instructions were not updated.');
+  await regular(join(stateDirectory, 'workspace', 'TOOLS.md'));
+  const migratedConfigBytes = await readFile(configPath);
+  await runProfileSetup('repeat installed setup remains idempotent');
+  assert.ok(migratedConfigBytes.equals(await readFile(configPath)), 'Repeated installed setup rewrote configuration.');
+  await assertPreserved('Repeated installed setup');
+  await runSessionFixture('verify', sessionId);
+  stage = 'new installed Electron decrypts retained old Windows credential';
+  await credentialProbe('decrypt', stage);
+  assert.equal(await hash(credentialPath), protectedHashes.get(credentialPath), 'Reading the retained encrypted credential changed its bytes.');
+  stage = 'installed real PDF and document creation';
+  await run(process.execPath, [join(root, 'scripts', 'verify-documents-windows.mjs'), join(installDirectory, 'resources')], { output: true, timeout: 120_000, label: stage });
+  stage = 'actual installed GUI, second click and Windows DPAPI';
+  const guiAppData = join(temporary, 'isolated-gui-appdata'); await mkdir(guiAppData);
+  await run(process.execPath, [join(root, 'scripts', 'verify-desktop-launch-windows.mjs'), installedExecutable], { output: true, label: stage, env: { APPDATA: guiAppData } });
+  assert.equal(await readFile(dataMarker, 'utf8'), markerText, 'Isolated GUI smoke changed the normal GIDEON data marker.');
+  await assertPreserved('Isolated installed GUI smoke');
   await uninstall();
-  assert.equal(await readFile(dataMarker, 'utf8'), 'Owned CI marker: uninstall must preserve application data.\n', 'Uninstaller removed application data.');
-  annotation('notice', 'PASS: actual per-user installer, installed source checksums, Desktop/Start Menu shortcut targets, real GUI/second click/DPAPI/natural exit, own uninstall cleanup and preserved app data. No engine or Gemini request was started.');
+  await assertPreserved('Uninstaller');
+  annotation('notice', `PASS: actual published ${previousVersion} → ${desktopPackage.version} per-user installer upgrade; active SQLite conversation spanning one hour, notes, custom user preferences, model, token and encrypted credentials retained; new profile migration/idempotence, installed PDF/Markdown/TXT/CSV, all source checksums, shortcut targets, real GUI/second click/DPAPI/natural exit and own uninstall cleanup verified. No engine or Gemini request was started.`);
 }
 
 try { await main(); }
@@ -270,8 +498,13 @@ finally {
     try { await uninstall(); } catch (error) { failed = true; annotation('error', `Own installation cleanup: ${error.message}`); }
   }
   if (ownedDataDirectory) {
-    try { if (dataMarker) await unlink(dataMarker); await rmdir(dataDirectory); }
-    catch { annotation('notice', 'Own app-data marker directory could not be removed; other contents were preserved.'); }
+    try {
+      assert.equal(await readFile(dataMarker, 'utf8'), 'Owned CI marker: upgrades and uninstall must preserve application data.\n');
+      assert.equal((await probe()).GideonProcesses, 0, 'Owned app-data cleanup refused while GIDEON is running.');
+      // This directory was absent at preflight and created by this test. It
+      // contains only synthetic fixtures and the two owned GUI probes' data.
+      await rm(dataDirectory, { recursive: true, force: true, maxRetries: 3, retryDelay: 500 });
+    } catch { annotation('notice', 'Owned synthetic app-data cleanup could not be safely completed; files were preserved.'); }
   }
   if (temporary && !ownedInstall && !cleanupBlocked) {
     try { await rm(temporary, { recursive: true, force: true, maxRetries: 3, retryDelay: 500 }); }

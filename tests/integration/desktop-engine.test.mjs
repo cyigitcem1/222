@@ -24,7 +24,11 @@ test('masaüstü motoru gerçek Gateway’i açar ve özel kanaldan düzgün kap
   const updated = JSON.parse(await readFile(configFile, 'utf8'));
   assert.equal(updated.gateway.auth.token, token);
   assert.equal(updated.agents.defaults.model.primary, 'google/gemini-2.5-flash');
-  assert.deepEqual(updated.plugins.load.paths, [join(ROOT, 'extensions', 'gideon-guard')]);
+  assert.deepEqual(updated.plugins.load.paths, [
+    join(ROOT, 'extensions', 'gideon-guard'),
+    join(ROOT, 'node_modules', 'openclaw', 'dist', 'extensions', 'gideon-documents'),
+    join(ROOT, 'node_modules', '@openclaw', 'whatsapp'),
+  ]);
   assert.equal((await readdir(state)).filter(n => n.startsWith('openclaw.before-desktop-')).length, 1);
   const child = spawn(process.execPath, [join(ROOT, 'scripts', 'desktop-engine.mjs')], {
     cwd: ROOT, env: { ...openclawEnv(state), GIDEON_STATE_DIR: state, GEMINI_API_KEY: '', GOOGLE_API_KEY: '', NODE_COMPILE_CACHE: join(state, 'cache', 'inherited-node-compile') },

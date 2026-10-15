@@ -18,6 +18,24 @@ GIDEON, OpenClaw üzerinde çalışan Türkçe kişisel yardımcıdır. Resmî O
 
 Bu paket OpenClaw **2026.10.3** sürümünü kullanır. Bilgisayarınızdaki mevcut OpenClaw dosyaları üzerine yazmaz. Masaüstü verisi `%APPDATA%\GIDEON\state` içindedir; aşağıdaki kaynak komutları ise proje içindeki ayrı `.gideon/` profilini ve varsayılan `127.0.0.1:18799` adresini kullanır. Mevcut `18789` kurulumu ayrı kalır. GIDEON eski konuşmalarınızı kendiliğinden içe aktarmaz.
 
+## 0.2.4 kaynak sürümü: araştırma, gerçek dosyalar ve onaylı WhatsApp
+
+Bu depodaki **0.2.4 değişiklikleri**, web araması, özgün sayfa/PDF okuma, yönetilen tarayıcı ve kaynaklı **PDF, Markdown, TXT, CSV** üretimini ekler. “Bu konuyu araştır; özgün Yargıtay kararını ve mevzuatı oku; kaynaklarıyla PDF olarak ver” isteği bu araçlarla yürütülür. Belge aracı gerçek bir dosya oluşturur; yalnızca PDF'ye kopyalanacak metin üretmez. İstediğiniz yeni rapor ek onay istemez, mevcut dosyalarınızın üzerine yazılmaz. Gerçek OpenClaw WebChat akışında PDF eki ve kimlik doğrulamalı indirme, yeniden başlatmadan sonra aynı dosyanın korunmasıyla birlikte test edildi; Windows yayınının denetimleri bekleniyor. [Araştırma ve dosya kullanımı](docs/ARASTIRMA-VE-BAGLANTILAR.md).
+
+WhatsApp hesabı panelde QR koduyla bağlanır. GIDEON yalnızca açıkça belirtilen numaraya kısa metin gönderebilir; alıcı ve metnin tamamı her gönderimden önce onay kartında görünür. Gelen WhatsApp mesajlarına otomatik yanıt, grup gönderimi, arama ve başka kişiye dosya gönderme bu profilin kapsamında değildir. Gerçek hesap bağlantısı için QR kodunu telefonunuzdan okutmanız gerekir.
+
+Yeni profillerin metin modeli **`google/gemini-3.5-flash`** olur; mevcut profilinizin model seçimi korunur. Arama ve PDF işlemleri de aynı Gemini API erişimini kullanır. Google hesabındaki model erişimi ve kota geçerli olmaya devam eder.
+
+**0.2.4 Windows yayını henüz doğrulanmadı.** Üstteki yayımlanmış 0.2.3 dosyası bu yeni özellikleri içermez. [0.2.4 sürüm notları](docs/RELEASE-0.2.4.md), tamamlanan ve bekleyen doğrulamaları ayırır.
+
+## Güncellemede hafızanız
+
+Uygulama güncellemesi ile kişisel veri birbirinden ayrıdır: program dosyaları yenilenir; kayıtlı konuşmalarınız, hafıza notlarınız, raporlarınız ve anahtarınız `%APPDATA%\GIDEON` altında kalır. Güncelleme için bu klasörü silmeyin, farklı bir Windows hesabında sıfırdan profil oluşturmayın. 0.2.4 geçişi eski fabrika talimatlarını yalnızca özgün içerikle birebir eşleşiyorsa yeniler ve önceki hâlini özel bir yedekte tutar; kişiselleştirilmiş talimatlarınız üzerine yazılmaz.
+
+Yeni bilgi, görev veya ayar eklemek için uygulamayı yeniden kurmanız gerekmez. Programın kodu değiştiğinde yeni kurulum dosyası mevcut uygulamayı günceller; kullanıcı verisi ayrı kalır. Otomatik uygulama güncelleyicisi bu sürümde yoktur.
+
+“Yarın İzmir'e gidiyorum; bunu kesin hafızaya kaydet” gibi önemli bir bilgi için kayıt işlemini onaylayın; sonra yeni konuşmada kaynağıyla hatırlamasını isteyin. Kaydedilmiş metin konuşmaları korunur. OpenClaw, Google Live'ın kesinleştirdiği kullanıcı ve asistan sözlerini etkin konuşmanın SQLite kaydına işler; henüz tamamlanmamış konuşma geçicidir. Bir saatlik gerçek ses görüşmesinin bütünüyle saklanması henüz uçtan uca doğrulanmadı. Önemli bilgiler için onaylı hafıza notu ve düzenli şifreli yedek kullanın.
+
 ## Kaynak sürümünü geliştirmek için başlatma
 
 Windows'ta paketi açtıktan sonra **GIDEON.cmd** dosyasına çift tıklayabilirsiniz. Gerekli paketleri kurar, GIDEON profilini hazırlar ve başlatır. Node.js'in aşağıda belirtilen sürümü önceden kurulu olmalıdır. Bu kısayol gerçek Windows cihazda henüz test edilmedi.
@@ -40,7 +58,7 @@ npm run dashboard
 
 Resmî OpenClaw paneli koyu Phosphor temasıyla açılır. Paneli açan komut, erişim token'ını terminale yazdırmaz. Sohbette “Adın ne?” diyerek başlayın. Canlı ses için panelin Google Live Voice bölümünden mikrofon izni verip görüşmeyi başlatın. Kapatmak için hizmet terminalinde **Ctrl+C** kullanın.
 
-Metin modeli `google/gemini-3.1-pro-preview`, canlı ses modeli `gemini-3.1-flash-live-preview`, ses `Kore` olarak hazırlanır. Google API hesabınızda bu modellere erişim ve kota bulunmalıdır. Gemini Pro veya ChatGPT Pro tüketici aboneliği API kullanımını otomatik karşılamaz; ücreti ve bütçeyi Google hesabınızdan takip edin.
+Bu kaynak sürümünde yeni profillerin metin modeli `google/gemini-3.5-flash`, canlı ses modeli `gemini-3.1-flash-live-preview`, ses `Kore` olarak hazırlanır. Mevcut profilin metin modeli korunur. Google API hesabınızda bu modellere erişim ve kota bulunmalıdır. Gemini Pro veya ChatGPT Pro tüketici aboneliği API kullanımını otomatik karşılamaz; ücreti ve bütçeyi Google hesabınızdan takip edin.
 
 ## Günlük kullanım
 
@@ -48,8 +66,10 @@ Metin modeli `google/gemini-3.1-pro-preview`, canlı ses modeli `gemini-3.1-flas
 - **Hatırlamak:** “Bunu daha önce hangi tarihte konuşmuştuk?” Kayıt bulunursa kaynak ve tarih kullanılır; bulunmayan geçmişin uydurulmaması davranış kuralıdır ve gerçek modelle kabul testi gerekir.
 - **Düzeltmek:** “Bu bilgi değişti…” Eski kayıt tarihçe olarak korunup yeni kayıt için onay istenir.
 - **Hatırlatmak:** “Yarın 10:00 için çalışma hatırlatması oluştur.” Saat dilimi Türkiye'dir. Resmî yerel zamanlayıcı, hizmet ve bilgisayar açıkken çalışır. Telefon bildirimi veya kapalı bilgisayarda teslim garantisi yoktur.
+- **Araştırmak ve belge hazırlamak:** “Kararın özgün metnini oku, karar numarasını ve kaynak bağlantısını göster, sonucu PDF yap.” Erişilemeyen veya okunmayan kaynak başarılı araştırma sayılmaz.
+- **WhatsApp mesajı:** Bağlı hesapla “+90… numarasına şu metni gönder” deyin; alıcıyı ve metni kontrol edip yalnızca o gönderime izin verin.
 
-Dosya yazma, düzenleme ve zamanlayıcı değişiklikleri `gideon-guard` eklentisiyle eylem başına **bir kez izin ver / reddet** onayına bağlıdır. Genel “Tam Erişim” tercihi bu denetimi kaldırmaz. Terminal çalıştırma, dosya silme, dışarı mesaj gönderme, tarayıcı otomasyonu ve başka ajanlar bu profilde kapalıdır. Ayrıntılar [güvenlik belgesindedir](docs/GUVENLIK.md).
+Not yazma/düzenleme, zamanlayıcı değişiklikleri ve desteklenen WhatsApp gönderimleri `gideon-guard` eklentisiyle eylem başına **bir kez izin ver / reddet** onayına bağlıdır. İstenen yeni raporun oluşturulması ek onay istemez. Araştırma için web okuma ve yönetilen tarayıcı açılır; desteklenen tarayıcı form etkileşimleri işlem onayı gerektirir. Genel “Tam Erişim” tercihi bu denetimi kaldırmaz. Terminal çalıştırma, dosya silme ve başka ajanlar kapalıdır. [Araştırma ve bağlantı kapsamı](docs/ARASTIRMA-VE-BAGLANTILAR.md).
 
 ## Denetim ve yedek
 
@@ -81,7 +101,7 @@ Komut parola ve dosya bütünlüğünü doğrular; mevcut GIDEON üzerine yazmaz
 
 ## Ne doğrulandı, ne tamamlanmayı bekliyor?
 
-Bulutta **59 birim testi ve 9 entegrasyon testi** geçti. Birim testleri ilk açılış, profil/izin/yedek, masaüstü anahtar ve hizmet kontrolcüsü ile yerel adres seçimini kapsar. Gerçek OpenClaw entegrasyonunda panel, üç oturumun kalıcı arşivi, yerel hafıza araması, yeniden başlatma, görev kalıcılığı ve şifreli geri yükleme doğrulandı. Masaüstü motorunun açılışı ve kapanışı Linux'ta ayrıca test edildi; dört arayüz akışı taklit edilmiş bağlantı durumlarıyla denetlendi. Ayrıntılar [doğrulama raporunda](docs/DOGRULAMA.md).
+Yayımlanmış **0.2.3** için bulutta **59 birim testi ve 9 entegrasyon testi** geçti. Birim testleri ilk açılış, profil/izin/yedek, masaüstü anahtar ve hizmet kontrolcüsü ile yerel adres seçimini kapsar. Gerçek OpenClaw entegrasyonunda panel, üç oturumun kalıcı arşivi, yerel hafıza araması, yeniden başlatma, görev kalıcılığı ve şifreli geri yükleme doğrulandı. Masaüstü motorunun açılışı ve kapanışı Linux'ta ayrıca test edildi; dört arayüz akışı taklit edilmiş bağlantı durumlarıyla denetlendi. [Önceki doğrulama raporu](docs/DOGRULAMA.md) ve [0.2.4 doğrulama durumu](docs/RELEASE-0.2.4.md).
 
 Yerel kurulum ve güvenlik testlerinin komutları [kabul testleri belgesindedir](docs/KABUL-TESTLERI.md). Bu teslimatta API anahtarı sağlanmadığından **gerçek Gemini yanıtı, beş dakikalık Türkçe canlı ses, persona/hafıza davranışı ve telefon erişimi canlı doğrulanmış değildir**. Bunları başarılı saymak için gerçek cihazda kabul testleri gerekir.
 
@@ -91,7 +111,7 @@ Telefon için HTTPS ve kimlik doğrulamalı erişim ayrıca kurulmalıdır. Gate
 
 ## Teknik kullanım ve kaynaklar
 
-İleri bir denetim gerekirse `npm run openclaw -- KOMUT` resmî CLI'yi GIDEON'un ayrı profiliyle çalıştırır. Örneğin `npm run openclaw -- config validate`. `setup` yeniden çalıştırıldığında mevcut yapılandırma ve kullanıcı notları üzerine yazılmaz. Yeni kurulumda `GIDEON_STATE_DIR`, `GIDEON_PORT` ve `GIDEON_MODEL` kullanılabilir; var olan profil bu değişkenlerle sessizce yeniden yazılmaz.
+İleri bir denetim gerekirse `npm run openclaw -- KOMUT` resmî CLI'yi GIDEON'un ayrı profiliyle çalıştırır. Örneğin `npm run openclaw -- config validate`. `setup` kullanıcı notlarını korur; sürüm geçişinde desteklenen yeni özellikler mevcut profile eklenir. Mevcut model, Gateway token'ı ve kişisel talimatlar korunur; tanınan eski fabrika dosyalarının değişmeden önce yedeği alınır. Yeni kurulumda `GIDEON_STATE_DIR`, `GIDEON_PORT` ve `GIDEON_MODEL` kullanılabilir; var olan profilin model ve adresi bu değişkenlerle sessizce değiştirilmez.
 
 - [OpenClaw 2026.10.3 kaynak sürümü](https://github.com/openclaw/openclaw/tree/v2026.10.3)
 - [Google sağlayıcısı](https://docs.openclaw.ai/providers/google)

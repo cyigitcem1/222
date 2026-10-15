@@ -1,0 +1,17 @@
+{
+  "id": "gideon-documents",
+  "name": "GIDEON Belgeler",
+  "description": "Türkçe PDF ve kaynaklı indirilebilir raporlar üretir.",
+  "categories": ["other"],
+  "activation": { "onStartup": true },
+  "contracts": { "tools": ["gideon_document"] },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["workspace"],
+    "properties": {
+      "workspace": { "type": "string", "minLength": 1 },
+      "stateDir": { "type": "string", "minLength": 1 }
+    }
+  }
+}

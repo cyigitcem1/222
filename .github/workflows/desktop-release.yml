@@ -72,6 +72,18 @@ jobs:
             Write-Output "::error title=Windows engine::$message"
             exit $engineExit
           }
+      - name: Verify native Windows PDF and document creation
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          node scripts/verify-documents-windows.mjs .desktop-build 2>&1 | Tee-Object -FilePath windows-documents.log
+          $documentsExit = $LASTEXITCODE
+          if ($documentsExit -ne 0) {
+            $tail = (Get-Content windows-documents.log -Tail 35) -join "`n"
+            $message = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Windows documents::$message"
+            exit $documentsExit
+          }
       - name: Package verified Windows app
         shell: pwsh
         run: |
@@ -96,7 +108,7 @@ jobs:
             Write-Output "::error title=Windows desktop::$message"
             exit $uiExit
           }
-      - name: Verify Windows installation and installed desktop launch
+      - name: Verify Windows upgrade, retained memory and installed desktop launch
         shell: pwsh
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
