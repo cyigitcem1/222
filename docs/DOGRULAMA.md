@@ -1,4 +1,26 @@
-# Teslim doğrulaması — 0.2.3, 14 Ekim 2026
+# Teslim doğrulaması
+
+## 0.2.4 — 15 Ekim 2026
+
+[`5ee1c10` kaynak sürümünün](https://github.com/cyigitcem1/222/commit/5ee1c10) [ana dal çalışması](https://github.com/cyigitcem1/222/actions/runs/38696555844) başarılıdır. [Temiz kontrol işi](https://github.com/cyigitcem1/222/actions/runs/38696555844/job/116294351027) **85 birim ve 12 entegrasyon testi** geçirdi. Belge üretimi, izin sınırları, gerçek SQLite verisiyle profil geçişi ve eski Windows satır sonlarının tanınması kapsam içindedir; sıfır başarısız veya atlanan test.
+
+Gerçek Gateway/WebChat denetiminde yerel test sağlayıcısı `chat.send` üzerinden `gideon_document` aracını çağırdı; PDF eki gerçek `chat.history` sonucunda yer aldı. Kimlik doğrulamalı HTTP indirmesi üretilen dosyayla bayt bayt aynıydı; kimlik doğrulamasız istek `401`, yanlış konuşma ve sahte ek adresleri `404` döndürdü. Gateway yeniden başlatılınca aynı adres aynı dosyayı verdi. Test gerçek Google çağrısı veya arayüz düğmesine tıklama kullanmadı.
+
+Sentetik Talk denetimi, iki konuşmacının toplam **120 kesinleşmiş söz parçasını** gerçek kayıt yoluyla etkin konuşmanın SQLite deposuna yazdı; tekrar denemelerde tekilleştirme ve yeniden başlatma sonrası kayıtlar doğrulandı. Google Live, mikrofon veya ses tanıma hizmeti kullanılmadı. Gerçek bir saatlik ses görüşmesinin dökümü bu testle doğrulanmış sayılmaz.
+
+[Gerçek Windows işi](https://github.com/cyigitcem1/222/actions/runs/38696555844/job/116295515780) motor/Gateway, Türkçe PDF okuma/render, kaynak sağlama toplamları, kurulu görünür arayüz, ikinci açılış, DPAPI saklama/okuma, düzgün kapanış ve kaldırma kontrollerini geçti. Yayımlanmış **0.2.3 → 0.2.4 yükseltmesi** 15 Ekim 2026 Türkiye saatiyle **10:17:14–10:29:08** arasında başarılı oldu. Gerçek eski kurulum üstüne yeni kurulum uygulandı; SQLite'taki **60 dakikaya yayılan 61 sentetik kullanıcı mesajı**, notlar, kişisel `USER.md`, model seçimi, erişim token'ı ve eski Windows DPAPI anahtarı korundu. Eski anahtar yeni uygulama tarafından çözülebildi. Kaldırma kullanıcı verisini temizlemedi.
+
+**Yayımlandı ve indirme doğrulandı:** [`v0.2.4` etiketi](https://github.com/cyigitcem1/222/tree/v0.2.4), `eccb1aff233c4dbcc77b95fc278cfabb14b33639` kaynak sürümündedir. [Etiketin temiz kontrol işi](https://github.com/cyigitcem1/222/actions/runs/38697912257/job/116298775575) **85 birim ve 12 entegrasyon testini**, [Windows yayın işi](https://github.com/cyigitcem1/222/actions/runs/38697912257/job/116299520065) aynı motor/PDF/kurulum/yükseltme/arayüz/DPAPI/kaldırma denetimlerini geçti. Gerçek eski sürümden yükseltme 15 Ekim 2026 Türkiye saatiyle **10:27:05–10:38:59**, yayın **10:38:59–10:39:13** arasında tamamlandı; Windows işi **10:39:50**'de başarılı bitti.
+
+[Yayınlanan kurulum dosyasının](https://github.com/cyigitcem1/222/releases/download/v0.2.4/GIDEON-0.2.4-Kurulum.exe) tamamı tekrar indirildi: **320.153.552 bayt**, SHA-256 **`452c98e794237c7625d6752d3b70ba8900b23f8cfcce2da942cee9c8714d41e2`**. Aynı yayından `SHA256SUMS.txt` ve `PACKAGED-SOURCES.json` indirildi; EXE'nin tam akış hash'i yayınlanan özetle eşleşti. Kaynak manifesti sürüm **0.2.4**, kayıt sayısı **46.705**; seçilen 26 proje kaynağı/eklenti/yazı tipi hash'i bağımsız karşılaştırmada eşleşti. Metin kaynaklarda bilinen Windows CRLF farkı hesaba katıldı; ikili yazı tipinde bayt eşitliği arandı. Manifestteki kaynak dosyaları ve ayrıca denetlenen EXE/Node/runtime manifesti bu kapsam içindedir; Electron'un bütün diğer kök destek dosyalarının tek tek hash denetimi yapıldığı iddia edilmez.
+
+Gerçek Gemini yanıtı, ücretli Google Search/PDF isteği, gerçek WhatsApp QR bağlantısı/gönderimi, mikrofon, bir saatlik canlı ses veya dışarıdan iPhone erişimi denenmedi. Kamu hukuk sitelerinin istekleri bu bulutun proxy'sinde kaynak sunucuya ulaşmadan `CONNECT 403` ile engellendi; sitelerin kendisinin 403 verdiği iddia edilmez. Kullanıcı cihazına veya mevcut gerçek kişisel verisine erişilmedi; bütün test kayıtları sentetiktir.
+
+Bu bulut çalışma kopyasında önceki GIDEON başlatıcısı kimliği doğrulanarak düzgün kapatıldı; mevcut `.gideon` profili özellik revizyonu **2**'ye yükseltildi. `npm run setup` ve `npm run start:cloud` çalıştırıldı; başlatma tekrarlandığında yapılandırma, gerçek Gateway sağlığı ve yerel hafıza kontrolleri başarılıydı. Bu bulutta Gemini ortam anahtarı eksiktir; değer okunup paylaşılmadı ve canlı model başarısı iddia edilmez.
+
+Yeniden kullanılabilir bulut başlatma talimatları ve resmî hukuk kaynaklarının alan adları mevcut ağ listesi korunarak yapılandırma taslağına kaydedildi. Taslak kaydı çalışma ortamının ağ politikasını uygulamaz; etkinleştirmek için ortam ayarlarında **Kaydet/Yayımla** gerekir. Kurulum scripti korunmuştur; paketlerin kendi `postinstall` adımı GIDEON'un incelenmiş belge eklentisini paketler.
+
+## 0.2.3 — tarihsel doğrulama, 14 Ekim 2026
 
 Çalıştırılan ortam: Linux x64 bulut, Node.js 24.19.0, npm 11.9.0, resmî OpenClaw 2026.10.3. Gerçek kullanıcı cihazına veya mevcut Windows OpenClaw kurulumuna erişilmedi. Test içerikleri sentetiktir.
 

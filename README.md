@@ -2,9 +2,9 @@
 
 ## Windows masaüstü — bir kez kurun, simgeden açın
 
-[**GIDEON 0.2.3 Windows kurulumunu indir**](https://github.com/cyigitcem1/222/releases/download/v0.2.3/GIDEON-0.2.3-Kurulum.exe) · 300,8 MB · [Sürüm sayfası](https://github.com/cyigitcem1/222/releases/tag/v0.2.3)
+[**GIDEON 0.2.4 Windows kurulumunu indir**](https://github.com/cyigitcem1/222/releases/download/v0.2.4/GIDEON-0.2.4-Kurulum.exe) · 320,2 MB · [Sürüm sayfası](https://github.com/cyigitcem1/222/releases/tag/v0.2.4)
 
-**Yayımlandı.** Gerçek Windows kurulum denetimleri geçti; yayınlanan dosya indirilip tamamının SHA-256 bütünlüğü doğrulandı.
+**Yayımlandı.** Gerçek Windows kurulumu ve 0.2.3'ten yükseltme denetimleri geçti; yayınlanan dosyanın tamamı indirilip SHA-256 bütünlüğü doğrulandı.
 
 Kurulum dosyasına çift tıklayın. Program Windows hesabınıza otomatik kurulur ve açılır; yönetici kurulumu, Node veya terminal gerekmez. İlk kurulum birkaç dakika sürebilir. GIDEON penceresinde Gemini API anahtarınızı bir kez girip **Kaydet ve aç** seçeneğine basın.
 
@@ -12,21 +12,21 @@ Sonraki açılışlarda masaüstündeki **GIDEON** simgesini kullanın. Uygulama
 
 Anahtar Windows hesabınızla şifrelenir. Kişisel veriler uygulama dosyasının yanında tutulmaz; `%APPDATA%\GIDEON` altında kalır. **GIDEON → Bağlantı ayarları** menüsünden anahtarınızı değiştirebilir veya kaldırabilirsiniz. Programı kapatınca yalnızca kendisinin açtığı hizmet kapanır. İlk açılışta başka bir program aynı adresi kullanıyorsa otomatik boş adres seçilir; var olan profilin adresi sessizce değiştirilmez.
 
-**0.2.3'ün gerçek Windows kurulumu, kısayolları, kurulu arayüzü, ikinci açılışı, DPAPI anahtar saklama/okuma ve düzgün kapanışı doğrulandı.** Kaldırma uygulama dosyalarını temizledi ve kişisel veriyi temsil eden test kaydını korudu. [Windows test kanıtı](https://github.com/cyigitcem1/222/actions/runs/38596089277/job/115963939428). Gemini ve mikrofon testi yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
+**0.2.4'ün gerçek Windows kurulumu, Türkçe PDF üretimi/okunması, kurulu arayüzü, ikinci açılışı, eski DPAPI anahtarının okunması ve düzgün kapanışı doğrulandı.** 0.2.3'ten yükseltme konuşmaları, notları ve kişisel ayarları korudu; kaldırma uygulama dosyalarını temizleyip kullanıcı verisini korudu. [Windows yayın testi](https://github.com/cyigitcem1/222/actions/runs/38697912257/job/116299520065). Gerçek Gemini yanıtı ve mikrofon testi yapılmadı. Paket yayıncı sertifikasıyla imzalı değildir; Windows ek güvenlik onayı gösterebilir. [Masaüstü kullanım notları](docs/MASAUSTU.md).
 
 GIDEON, OpenClaw üzerinde çalışan Türkçe kişisel yardımcıdır. Resmî OpenClaw panelinde yazılı sohbet ve Google Live Voice, kalıcı konuşma kayıtları, kaynaklı hafıza araması ve onaylı yerel hatırlatmalar için hazırlanmıştır. Kimliği ve davranış kuralları tek `main` ajanında tutulur; kişisel bilgiler ilk kurulumda boş bırakılır.
 
 Bu paket OpenClaw **2026.10.3** sürümünü kullanır. Bilgisayarınızdaki mevcut OpenClaw dosyaları üzerine yazmaz. Masaüstü verisi `%APPDATA%\GIDEON\state` içindedir; aşağıdaki kaynak komutları ise proje içindeki ayrı `.gideon/` profilini ve varsayılan `127.0.0.1:18799` adresini kullanır. Mevcut `18789` kurulumu ayrı kalır. GIDEON eski konuşmalarınızı kendiliğinden içe aktarmaz.
 
-## 0.2.4 kaynak sürümü: araştırma, gerçek dosyalar ve onaylı WhatsApp
+## Araştırma, gerçek dosyalar ve onaylı WhatsApp
 
-Bu depodaki **0.2.4 değişiklikleri**, web araması, özgün sayfa/PDF okuma, yönetilen tarayıcı ve kaynaklı **PDF, Markdown, TXT, CSV** üretimini ekler. “Bu konuyu araştır; özgün Yargıtay kararını ve mevzuatı oku; kaynaklarıyla PDF olarak ver” isteği bu araçlarla yürütülür. Belge aracı gerçek bir dosya oluşturur; yalnızca PDF'ye kopyalanacak metin üretmez. İstediğiniz yeni rapor ek onay istemez, mevcut dosyalarınızın üzerine yazılmaz. Gerçek OpenClaw WebChat akışında PDF eki ve kimlik doğrulamalı indirme, yeniden başlatmadan sonra aynı dosyanın korunmasıyla birlikte test edildi; Windows yayınının denetimleri bekleniyor. [Araştırma ve dosya kullanımı](docs/ARASTIRMA-VE-BAGLANTILAR.md).
+**0.2.4**, web araması, özgün sayfa/PDF okuma, yönetilen tarayıcı ve kaynaklı **PDF, Markdown, TXT, CSV** üretimini ekler. “Bu konuyu araştır; özgün Yargıtay kararını ve mevzuatı oku; kaynaklarıyla PDF olarak ver” isteği bu araçlarla yürütülür. Belge aracı gerçek bir dosya oluşturur; yalnızca PDF'ye kopyalanacak metin üretmez. İstediğiniz yeni rapor ek onay istemez, mevcut dosyalarınızın üzerine yazılmaz. Gerçek OpenClaw WebChat akışında PDF eki ve kimlik doğrulamalı indirme, yeniden başlatmadan sonra aynı dosyanın korunmasıyla birlikte test edildi. Gerçek Windows kurulumu, Türkçe PDF ve eski sürümden yükseltme denetimleri de geçti. [Araştırma ve dosya kullanımı](docs/ARASTIRMA-VE-BAGLANTILAR.md).
 
 WhatsApp hesabı panelde QR koduyla bağlanır. GIDEON yalnızca açıkça belirtilen numaraya kısa metin gönderebilir; alıcı ve metnin tamamı her gönderimden önce onay kartında görünür. Gelen WhatsApp mesajlarına otomatik yanıt, grup gönderimi, arama ve başka kişiye dosya gönderme bu profilin kapsamında değildir. Gerçek hesap bağlantısı için QR kodunu telefonunuzdan okutmanız gerekir.
 
 Yeni profillerin metin modeli **`google/gemini-3.5-flash`** olur; mevcut profilinizin model seçimi korunur. Arama ve PDF işlemleri de aynı Gemini API erişimini kullanır. Google hesabındaki model erişimi ve kota geçerli olmaya devam eder.
 
-**0.2.4 Windows yayını henüz doğrulanmadı.** Üstteki yayımlanmış 0.2.3 dosyası bu yeni özellikleri içermez. [0.2.4 sürüm notları](docs/RELEASE-0.2.4.md), tamamlanan ve bekleyen doğrulamaları ayırır.
+Yayınlanan kurulum dosyası **320.153.552 bayttır**; tamamının SHA-256 özeti ve yayın/test kanıtları [0.2.4 sürüm notlarındadır](docs/RELEASE-0.2.4.md).
 
 ## Güncellemede hafızanız
 
@@ -101,7 +101,7 @@ Komut parola ve dosya bütünlüğünü doğrular; mevcut GIDEON üzerine yazmaz
 
 ## Ne doğrulandı, ne tamamlanmayı bekliyor?
 
-Yayımlanmış **0.2.3** için bulutta **59 birim testi ve 9 entegrasyon testi** geçti. Birim testleri ilk açılış, profil/izin/yedek, masaüstü anahtar ve hizmet kontrolcüsü ile yerel adres seçimini kapsar. Gerçek OpenClaw entegrasyonunda panel, üç oturumun kalıcı arşivi, yerel hafıza araması, yeniden başlatma, görev kalıcılığı ve şifreli geri yükleme doğrulandı. Masaüstü motorunun açılışı ve kapanışı Linux'ta ayrıca test edildi; dört arayüz akışı taklit edilmiş bağlantı durumlarıyla denetlendi. [Önceki doğrulama raporu](docs/DOGRULAMA.md) ve [0.2.4 doğrulama durumu](docs/RELEASE-0.2.4.md).
+**0.2.4 yayınında 85 birim ve 12 entegrasyon testi geçti.** Gerçek Windows'ta motor, Türkçe PDF okuma/render, görünür kurulu arayüz, ikinci açılış ve yayımlanmış 0.2.3'ten yükseltme doğrulandı. Yükseltme, 60 dakikaya yayılan 61 sentetik konuşma kaydını, notları, kişisel kullanıcı dosyasını, model seçimini, erişim token'ını ve Windows DPAPI ile şifrelenmiş eski anahtarı korudu. [Windows yayın testi](https://github.com/cyigitcem1/222/actions/runs/38697912257/job/116299520065) ve [doğrulama raporu](docs/DOGRULAMA.md).
 
 Yerel kurulum ve güvenlik testlerinin komutları [kabul testleri belgesindedir](docs/KABUL-TESTLERI.md). Bu teslimatta API anahtarı sağlanmadığından **gerçek Gemini yanıtı, beş dakikalık Türkçe canlı ses, persona/hafıza davranışı ve telefon erişimi canlı doğrulanmış değildir**. Bunları başarılı saymak için gerçek cihazda kabul testleri gerekir.
 
